@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>棚番検索</title>
+<style>
+body { font-size:18px; }
+.item { border:1px solid #ccc; padding:6px; margin:6px 0; }
+</style>
+</head>
+<body>
+
+<h2>棚番検索</h2>
+
+部品№：
+<input id="partno"><br><br>
+
+規格：
+<input id="spec"><br><br>
+
+<button onclick="search()">検索</button>
+
+<div id="result"></div>
+
+<script>
+/* 仮データ（確認用） */
+const DATA = `
+部品№    品名    規格    棚番
+292944    リチウム電池    ER6(AA)3.6V-ABS    1F-NF-08
+`;
+
+/* 行分割 */
+const lines = DATA.replace(/\r/g,"").trim().split("\n");
+
+function search(){
+  const p = document.getElementById("partno").value
+            .replace(/[^0-9]/g,"");
+  const s = document.getElementById("spec").value.trim();
+  const out = document.getElementById("result");
+  out.innerHTML = "";
+
+  let hit = false;
+
+  for (let i = 1; i < lines.length; i++) {
+    // ★ TABでもスペースでも対応
+    const cols = lines[i].trim().split(/\s+/);
+
+    const part   = cols[0];
+    const spec   = cols[2];
+    const shelf  = cols[3];
+
+    if (
+      (p && part === p) ||
+      (s && spec.includes(s))
+    ) {
+      const d = document.createElement("div");
+      d.className = "item";
+      d.textContent =
+        "部品№：" + part +
+        " / 規格：" + spec +
+        " / 棚番：" + shelf;
+      out.appendChild(d);
+      hit = true;
+    }
+  }
+
+  if (!hit) out.textContent = "見つかりません";
+}
+</script>
+
+</body>
+</html>
