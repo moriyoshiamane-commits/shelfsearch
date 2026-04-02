@@ -6,7 +6,7 @@
 <title>棚番検索</title>
 <style>
 body { font-size:18px; }
-.item { border:1px solid #ccc; padding:6px; margin:6px 0; }
+.item { border:1px solid #ccc; padding:6px; margin:4px 0; }
 </style>
 </head>
 <body>
@@ -24,7 +24,7 @@ body { font-size:18px; }
 <div id="result"></div>
 
 <script>
-/* 仮データ（確認用） */
+// 292944 が成功した時の「直書きデータ方式」
 const DATA = `
 部品№    品名    規格    棚番
 122474	ＡＣサーボモータ（Ａ４）　　　　　　　	MSMD5AZP1T	1F-A-01
@@ -594,30 +594,31 @@ const DATA = `
 
 `;
 
-/* 行分割 */
+// 改行処理
 const lines = DATA.replace(/\r/g,"").trim().split("\n");
 
 function search(){
-  const p = document.getElementById("partno").value
-            .replace(/[^0-9]/g,"");
+  // 入力側は数字以外を除去（スマホ対策）
+  const p = document.getElementById("partno").value.replace(/[^0-9]/g, "");
   const s = document.getElementById("spec").value.trim();
   const out = document.getElementById("result");
   out.innerHTML = "";
 
   let hit = false;
 
-  for (let i = 1; i < lines.length; i++) {
-    // ★ TABでもスペースでも対応
+  // ヘッダ行を除外
+  for (let i = 1; i < lines.length; i++){
+    // スペース/TAB混在でも分解
     const cols = lines[i].trim().split(/\s+/);
 
-    const part   = cols[0];
-    const spec   = cols[2];
-    const shelf  = cols[3];
+    const part  = cols[0]; // 部品№
+    const spec  = cols[2]; // 規格
+    const shelf = cols[3]; // 棚番
 
     if (
       (p && part === p) ||
       (s && spec.includes(s))
-    ) {
+    ){
       const d = document.createElement("div");
       d.className = "item";
       d.textContent =
