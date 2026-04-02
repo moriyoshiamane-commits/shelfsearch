@@ -4,10 +4,16 @@
 <head>
 <meta charset="utf-8">
 <title>棚番検索</title>
+
 <style>
 body { font-size:18px; }
-.item { border:1px solid #ccc; padding:6px; margin:4px 0; }
+.item {
+  border:1px solid #ccc;
+  padding:6px;
+  margin:4px 0;
+}
 </style>
+
 </head>
 <body>
 
@@ -24,7 +30,7 @@ body { font-size:18px; }
 <div id="result"></div>
 
 <script>
-// 292944 が成功した時の「直書きデータ方式」
+// データ直書き（CSVは使わない確実版）
 const DATA = `
 部品№    品名    規格    棚番
 122474	ＡＣサーボモータ（Ａ４）　　　　　　　	MSMD5AZP1T	1F-A-01
@@ -591,31 +597,26 @@ const DATA = `
 100818	ハーフユニオン　　　　　　　　　　　　	KCH06-M5	1G-VH-04
 150375	継手　　　　　　　　　　　　　　　　　	PUM5-4*2.5	1G-VH-05
 150359	継手　　　　　　　　　　　　　　　　　	PUM5-6*4	1G-VH-06
-
 `;
 
-// 改行処理
 const lines = DATA.replace(/\r/g,"").trim().split("\n");
 
 function search(){
-  // 入力側は数字以外を除去（スマホ対策）
-  const p = document.getElementById("partno").value.replace(/[^0-9]/g, "");
+  const p = document.getElementById("partno").value.replace(/[^0-9]/g,"");
   const s = document.getElementById("spec").value.trim();
   const out = document.getElementById("result");
   out.innerHTML = "";
 
   let hit = false;
 
-  // ヘッダ行を除外
-  for (let i = 1; i < lines.length; i++){
-    // スペース/TAB混在でも分解
+  for(let i = 1; i < lines.length; i++){
     const cols = lines[i].trim().split(/\s+/);
 
-    const part  = cols[0]; // 部品№
-    const spec  = cols[2]; // 規格
-    const shelf = cols[3]; // 棚番
+    const part   = cols[0];
+    const spec   = cols[2];
+    const shelf  = cols[3];
 
-    if (
+    if(
       (p && part === p) ||
       (s && spec.includes(s))
     ){
@@ -630,7 +631,9 @@ function search(){
     }
   }
 
-  if (!hit) out.textContent = "見つかりません";
+  if(!hit){
+    out.textContent = "見つかりません";
+  }
 }
 </script>
 
