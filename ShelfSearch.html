@@ -1,12 +1,19 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="utf-8">
 <title>棚番検索</title>
 <style>
-body { font-size:18px; }
-.item { border:1px solid #ccc; padding:6px; margin:6px 0; }
+  body {
+    font-size: 18px;
+    font-family: sans-serif;
+  }
+  .item {
+    border: 1px solid #ccc;
+    padding: 6px;
+    margin: 6px 0;
+  }
 </style>
 </head>
 <body>
@@ -24,47 +31,26 @@ body { font-size:18px; }
 <div id="result"></div>
 
 <script>
+/* ===============================
+   BUSDAU.csv を読み込む
+   =============================== */
 let lines = [];
 
-// CSV 読み込み（TAB区切り対応）
 fetch("BUSDAU.csv")
   .then(res => res.text())
   .then(text => {
-    lines = text.replace(/\r/g,"").trim().split("\n");
+    // CR除去 → 行配列
+    lines = text.replace(/\r/g, "").trim().split("\n");
+  })
+  .catch(err => {
+    document.getElementById("result").textContent =
+      "CSVの読み込みに失敗しました";
+    console.error(err);
   });
 
-function search(){
-  const p = document.getElementById("partno").value.replace(/[^0-9]/g,"");
-  const s = document.getElementById("spec").value.trim();
-  const out = document.getElementById("result");
-  out.innerHTML = "";
-
-  let hit = false;
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split("\t"); // TAB区切り
-    const part   = cols[0]?.trim();
-    const spec   = cols[2]?.trim();
-    const shelf  = cols[3]?.trim();
-
-    if (
-      (p && part === p) ||
-      (s && spec.includes(s))
-    ){
-      const d = document.createElement("div");
-      d.className = "item";
-      d.textContent =
-        "部品№：" + part +
-        " / 規格：" + spec +
-        " / 棚番：" + shelf;
-      out.appendChild(d);
-      hit = true;
-    }
-  }
-
-  if (!hit) out.textContent = "見つかりません";
-}
-</script>
-
-</body>
-</html>
+/* ===============================
+   検索処理
+   =============================== */
+function search() {
+  // スマホ対策：数字以外を除去（全角数字・空白対策）
+  const p = document.getElementById("partno").value.replace(/[^0-9]/g, "");
