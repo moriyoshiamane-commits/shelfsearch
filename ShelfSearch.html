@@ -614,7 +614,12 @@ function search(){
 
     const part   = cols[0];
     const spec   = cols[2];
-    const shelf  = cols[3];
+    
+let shelf = "";
+const m = lines[i].match(/\b\dF-[A-Z]+-\d+\b|\b[A-Z]\b|\$\d+/);
+if (m) {
+  shelf = m[0];
+}
 
     if(
       (p && part === p) ||
