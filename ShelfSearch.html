@@ -610,17 +610,15 @@ function search(){
   let hit = false;
 
   for(let i = 1; i < lines.length; i++){
-    const cols = lines[i].trim().split(/\s+/);
-
+  console.log("元の行:", lines[i]);
+console.log("TAB分割:", lines[i].split("\t"));
+const cols = lines[i].split("\t");
+    
     const part   = cols[0];
     const spec   = cols[2];
     
-let shelf = "";
-const m = lines[i].match(/\b\dF-[A-Z]+-\d+\b|\b[A-Z]\b|\$\d+/);
-if (m) {
-  shelf = m[0];
-}
-
+const shelf = cols[3];
+    
     if(
       (p && part === p) ||
       (s && spec.includes(s))
