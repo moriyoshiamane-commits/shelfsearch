@@ -616,7 +616,7 @@ function search(){
     const spec   = cols[2];
     
 let shelf = "";
-const m = lines[i].match(/\b\dF-[A-Z]+-\d+\b|\b[A-Z]\b|\$\d+/);
+const m = lines[i].match(/\b\dF-[A-Z]+-(?:\d+|ｿｳｺ)\b/);
 if (m) {
   shelf = m[0];
 }
