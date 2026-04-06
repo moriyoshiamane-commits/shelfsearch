@@ -610,7 +610,7 @@ function search(){
   let hit = false;
 
   for(let i = 1; i < lines.length; i++){
-    const cols = lines[i].trim().split(/\s+/);
+    const cols = lines[i].split("\t");
 
     const part   = cols[0];
     const spec   = cols[2];
