@@ -620,7 +620,7 @@ const shelf = cols[3];
     
     if(
       (p && part === p) ||
-      (s && spec.includes(s))
+      (s && spec.toLowerCase().includes(s.toLowerCase()))
     ){
       const d = document.createElement("div");
       d.className = "item";
