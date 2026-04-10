@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ヤマト運輸 客先№検索</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  margin: 10px;
+  background: #f5f5f5;
+}
+h2 {
+  margin-bottom: 10px;
+}
+input, button {
+  width: 100%;
+  font-size: 16px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.result {
+  background: #fff;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+.no {
+  font-size: 20px;
+  font-weight: bold;
+  color: #c62828;
+}
+.office {
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2>ヤマト運輸 客先№検索</h2>
+
+<input id="keyword" placeholder="例：神戸 西区 櫨谷">
+<button onclick="search()">検索</button>
+
+<div id="results"></div>
+
+<script>
+let records = [];
+
+fetch("YAMATO.csv")
+  .then(r => r.text())
+  .then(t => {
+    const lines = t.trim().split("\n");
+    const headers = lines.shift().split(",").map(h => h.trim());
+
+    records = lines.map(line => {
+      const cols = line.split(",");
+      const obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = (cols[i] || "").trim();
+      });
+      return obj;
+    });
+  });
+
+function search() {
+  const key = document.getElementById("keyword").value.trim();
+  const words = key.split(/\s+/);
+  const area = document.getElementById("results");
+  area.innerHTML = "";
+
+  if (!key) return;
+
+  const hits = records.filter(r => {
+    const target =
+      `${r["会社名"]} ${r["住所１"]} ${r["住所２"]} ${r["地区"]}`.toLowerCase();
+    return words.every(w => target.includes(w.toLowerCase()));
+  });
+
+  if (hits.length === 0) {
+    area.innerHTML = "該当なし";
+    return;
+  }
+
+  hits.forEach(r => {
+    area.innerHTML += `
+      <div class="result">
+        <div class="no">客先№：${r["客先№"]}</div>
+        <div class="office">${r["会社名"]}</div>
+        <div>${r["住所１"]}</div>
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
+``
