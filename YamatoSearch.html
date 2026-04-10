@@ -8,30 +8,60 @@
 
 <style>
 body {
-  font-family: sans-serif;
-  margin: 10px;
-  background: #f5f5f5;
-}
-h2 {
-  margin-bottom: 10px;
-}
-input, button {
-  width: 100%;
   font-size: 16px;
-  padding: 10px;
-  margin-bottom: 10px;
+  margin: 10px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-.result {
-  background: #fff;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
+
+/* 入力欄 */
+.search-input {
+  width: 260px;
+  padding: 4px;
+  font-size: 14px;
+  margin-bottom: 6px;
 }
-.no {
-  font-size: 20px;
+
+/* 検索ボタン（棚番検索と同一デザイン） */
+.search-button {
+  padding: 6px 14px;
+  font-size: 14px;
   font-weight: bold;
-  color: #c62828;
+  color: #ffffff;
+
+  background: linear-gradient(#4c8bf5, #356ac3);
+  border: 1px solid #2f5fb3;
+  border-radius: 6px;
+
+  cursor: pointer;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.25);
 }
+
+.search-button:hover {
+  background: linear-gradient(#5a95f6, #3b73cf);
+}
+
+.search-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+
+/* 結果表示 */
+.result {
+  border: 1px solid #ccc;
+  padding: 6px;
+  margin: 6px 0;
+}
+
+.no {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d32f2f;
+}
+
+.center {
+  font-weight: bold;
+}
+
 .office {
   font-weight: bold;
 }
@@ -42,18 +72,21 @@ input, button {
 
 <h2>ヤマト運輸 客先№検索</h2>
 
-<input id="keyword" placeholder="例：神戸 西区 櫨谷">
-<button onclick="search()">検索</button>
+所在地（例：大阪 城東）：<br>
+<input id="keyword" class="search-input"><br>
+
+<button class="search-button" onclick="search()">検索</button>
 
 <div id="results"></div>
 
 <script>
 let records = [];
 
+/* CSV読み込み（UTF-8） */
 fetch("YAMATO.csv")
-  .then(r => r.text())
-  .then(t => {
-    const lines = t.trim().split("\n");
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.trim().split("\n");
     const headers = lines.shift().split(",").map(h => h.trim());
 
     records = lines.map(line => {
@@ -68,11 +101,12 @@ fetch("YAMATO.csv")
 
 function search() {
   const key = document.getElementById("keyword").value.trim();
-  const words = key.split(/\s+/);
   const area = document.getElementById("results");
   area.innerHTML = "";
 
   if (!key) return;
+
+  const words = key.split(/\s+/);
 
   const hits = records.filter(r => {
     const target =
@@ -85,25 +119,21 @@ function search() {
     return;
   }
 
+  hits.forEach(r => {
+    const m = r["住所２"] ? r["住所２"].match(/([0-9]+)/) : null;
+    const centerCode = m ? m[1] : "";
 
-hits.forEach(r => {
-  // 住所２ から センターコード部分だけ抜き出し
-  const centerMatch = r["住所２"].match(/ｾﾝﾀｰｺｰﾄﾞ[:：]([0-9]+)/);
-  const centerCode = centerMatch ? centerMatch[1] : "";
-
-  area.innerHTML += `
-    <div class="result">
-      <div class="no">客先№：${r["客先№"]}</div>
-      <div><b>センターコード：</b>${centerCode}</div>
-      <div class="office">${r["会社名"]}</div>
-      <div>${r["住所１"]}</div>
-    </div>
-  `;
-});
-
+    area.innerHTML += `
+      <div class="result">
+        <div class="no">客先№：${r["客先№"]}</div>
+        <div class="center">センターコード：${centerCode}</div>
+        <div class="office">${r["会社名"]}</div>
+        <div>${r["住所１"]}</div>
+      </div>
+    `;
+  });
 }
 </script>
 
 </body>
 </html>
-``
