@@ -111,12 +111,15 @@ function search() {
   }
 
   hits.forEach(d => {
-    area.innerHTML += `
-      <div class="item">
-        部品№：${d.part}<br>
-        規格：${d.spec}<br>
-        棚番：<span class="shelf">${d.shelf}</span>
-      </div>
+    
+area.innerHTML += `
+  <div class="item">
+    部品№：${d.part}<br>
+    品名：${d.name}<br>
+    規格：${d.spec}<br>
+    棚番：<span class="shelf">${d.shelf}</span>
+  </div>
+
     `;
   });
 }
