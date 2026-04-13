@@ -101,8 +101,8 @@ function search() {
   area.innerHTML = "";
 
   const hits = data.filter(d =>
-    (!p || d.part.includes(p)) &&
-    (!s || d.spec.includes(s))
+  (!p || d.part.includes(p)) &&
+  (!s || d.spec.toLowerCase().includes(s.toLowerCase()))
   );
 
   if (hits.length === 0) {
