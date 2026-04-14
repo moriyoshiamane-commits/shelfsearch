@@ -21,18 +21,16 @@ body {
   margin-bottom: 6px;
 }
 
-/* 検索ボタン */
+/* 検索ボタン（統一UI） */
 .search-button {
   padding: 6px 14px;
   font-size: 14px;
   font-weight: bold;
   color: #ffffff;
-
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
   cursor: pointer;
-
   box-shadow: 0 2px 3px rgba(0,0,0,0.25);
 }
 
@@ -78,7 +76,7 @@ body {
 
 BOX名：<br>
 <input id="box" class="search-input"><br>
-  
+
 <button class="search-button" onclick="search()">検索</button>
 
 <div id="results"></div>
@@ -91,15 +89,16 @@ fetch("MachineMaster_AfterSupport.csv")
   .then(res => res.text())
   .then(text => {
     const lines = text.trim().split("\n");
-    lines.shift(); // ヘッダ行を除外
+    lines.shift(); // ヘッダ除外
 
     records = lines.map(line => {
       const cols = line.split(",");
       return {
-        customer: cols[1],  // 客先名
-        model: cols[3],     // 機種名
-        machineNo: cols[5], // 機械№
-        tel: cols[8]        // 電話番号
+        customer: cols[1],    // 客先名(B)
+        model: cols[2],       // 機械名(C)
+        machineNo: cols[4],   // 機械№(E)
+        box: cols[5],         // BOX名(F)
+        tel: cols[8]          // 電話番号(I)
       };
     });
   });
@@ -108,18 +107,19 @@ function search() {
   const c = document.getElementById("customer").value.trim().toLowerCase();
   const t = document.getElementById("tel").value.trim();
   const m = document.getElementById("model").value.trim().toLowerCase();
+  const no = document.getElementById("machineNo").value.trim();
+  const b = document.getElementById("box").value.trim().toLowerCase();
 
   const area = document.getElementById("results");
   area.innerHTML = "";
 
   const hits = records.filter(r =>
-  (!c || r.customer.toLowerCase().includes(c)) &&
-  (!t || r.tel.includes(t)) &&
-  (!m || r.model.toLowerCase().includes(m)) &&
-  (!no || r.machineNo.includes(no)) &&
-  (!b || r.box.toLowerCase().includes(b))
-);
-
+    (!c || r.customer.toLowerCase().includes(c)) &&
+    (!t || r.tel.includes(t)) &&
+    (!m || r.model.toLowerCase().includes(m)) &&
+    (!no || r.machineNo.includes(no)) &&
+    (!b || r.box.toLowerCase().includes(b))
+  );
 
   if (hits.length === 0) {
     area.innerHTML = "該当なし";
@@ -132,6 +132,7 @@ function search() {
         <div>客先名：${r.customer}</div>
         <div>電話番号：${r.tel}</div>
         <div>機種名：${r.model}</div>
+        <div>BOX名：${r.box}</div>
         <div class="machine-no">機械№：${r.machineNo}</div>
       </div>
     `;
@@ -141,3 +142,4 @@ function search() {
 
 </body>
 </html>
+``
