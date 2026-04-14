@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アフター対応 機械検索</title>
+
+<style>
+body {
+  font-size: 16px;
+  margin: 10px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* 入力欄 */
+.search-input {
+  width: 260px;
+  padding: 6px;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+/* 検索ボタン */
+.search-button {
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+
+  background: linear-gradient(#4c8bf5, #356ac3);
+  border: 1px solid #2f5fb3;
+  border-radius: 6px;
+  cursor: pointer;
+
+  box-shadow: 0 2px 3px rgba(0,0,0,0.25);
+}
+
+.search-button:hover {
+  background: linear-gradient(#5a95f6, #3b73cf);
+}
+
+.search-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+
+/* 結果表示 */
+.result {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 6px 0;
+}
+
+.machine-no {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d32f2f;
+}
+</style>
+</head>
+
+<body>
+
+<h2>アフター対応 機械検索</h2>
+
+客先名：<br>
+<input id="customer" class="search-input"><br>
+
+電話番号：<br>
+<input id="tel" class="search-input"><br>
+
+機種名：<br>
+<input id="model" class="search-input"><br>
+
+<button class="search-button" onclick="search()">検索</button>
+
+<div id="results"></div>
+
+<script>
+let records = [];
+
+/* CSV 読み込み（UTF-8） */
+fetch("MachineMaster_AfterSupport.csv")
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.trim().split("\n");
+    lines.shift(); // ヘッダ行を除外
+
+    records = lines.map(line => {
+      const cols = line.split(",");
+      return {
+        customer: cols[1],  // 客先名
+        model: cols[3],     // 機種名
+        machineNo: cols[5], // 機械№
+        tel: cols[9]        // 電話番号
+      };
+    });
+  });
+
+function search() {
+  const c = document.getElementById("customer").value.trim().toLowerCase();
+  const t = document.getElementById("tel").value.trim();
+  const m = document.getElementById("model").value.trim().toLowerCase();
+
+  const area = document.getElementById("results");
+  area.innerHTML = "";
+
+  const hits = records.filter(r =>
+    (!c || r.customer.toLowerCase().includes(c)) &&
+    (!t || r.tel.includes(t)) &&
+    (!m || r.model.toLowerCase().includes(m))
+  );
+
+  if (hits.length === 0) {
+    area.innerHTML = "該当なし";
+    return;
+  }
+
+  hits.forEach(r => {
+    area.innerHTML += `
+      <div class="result">
+        <div>客先名：${r.customer}</div>
+        <div>電話番号：${r.tel}</div>
+        <div>機種名：${r.model}</div>
+        <div class="machine-no">機械№：${r.machineNo}</div>
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
