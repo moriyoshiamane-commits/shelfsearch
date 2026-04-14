@@ -75,6 +75,9 @@ body {
 
 機械№：<br>
 <input id="machineNo" class="search-input"><br>
+
+BOX名：<br>
+<input id="box" class="search-input"><br>
   
 <button class="search-button" onclick="search()">検索</button>
 
@@ -96,7 +99,7 @@ fetch("MachineMaster_AfterSupport.csv")
         customer: cols[1],  // 客先名
         model: cols[3],     // 機種名
         machineNo: cols[5], // 機械№
-        tel: cols[9]        // 電話番号
+        tel: cols[8]        // 電話番号
       };
     });
   });
@@ -110,10 +113,13 @@ function search() {
   area.innerHTML = "";
 
   const hits = records.filter(r =>
-    (!c || r.customer.toLowerCase().includes(c)) &&
-    (!t || r.tel.includes(t)) &&
-    (!m || r.model.toLowerCase().includes(m))
-  );
+  (!c || r.customer.toLowerCase().includes(c)) &&
+  (!t || r.tel.includes(t)) &&
+  (!m || r.model.toLowerCase().includes(m)) &&
+  (!no || r.machineNo.includes(no)) &&
+  (!b || r.box.toLowerCase().includes(b))
+);
+
 
   if (hits.length === 0) {
     area.innerHTML = "該当なし";
