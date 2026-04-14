@@ -115,7 +115,7 @@ function search() {
 
   const hits = records.filter(r =>
     (!c || r.customer.toLowerCase().includes(c)) &&
-    (!t || r.tel.includes(t)) &&
+    (!t || r.tel.replace(/-/g, "").includes(t.replace(/-/g, ""))) &&
     (!m || r.model.toLowerCase().includes(m)) &&
     (!no || r.machineNo.includes(no)) &&
     (!b || r.box.toLowerCase().includes(b))
