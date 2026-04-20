@@ -1,141 +1,108 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>客先検索</title>
-    <style>
-        body {
-            font-family: "Meiryo", Arial, sans-serif;
-            margin: 20px;
-        }
-        label {
-            display: inline-block;
-            width: 180px;
-            margin-top: 8px;
-        }
-        input {
-            width: 260px;
-            padding: 4px;
-        }
-        button {
-            margin-top: 15px;
-            padding: 6px 20px;
-            font-size: 14px;
-        }
-        table {
-            border-collapse: collapse;
-            margin-top: 25px;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #999;
-            padding: 6px;
-            text-align: left;
-        }
-        th {
-            background-color: #f0f0f0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客先検索</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  margin: 10px;
+}
+
+input {
+  width: 260px;
+  padding: 4px;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+button {
+  padding: 4px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+table {
+  margin-top: 10px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #999;
+  padding: 4px;
+  font-size: 14px;
+}
+</style>
 </head>
+
 <body>
 
 <h2>客先検索</h2>
 
-<form id="searchForm">
-    <div>
-        <label>電話番号（ハイフン無し）</label>
-        <input type="text" id="tel">
-    </div>
+電話番号（ハイフン無し）<br>
+<input id="tel"><br>
 
-    <div>
-        <label>FAX番号（ハイフン無し）</label>
-        <input type="text" id="fax">
-    </div>
+FAX番号（ハイフン無し）<br>
+<input id="fax"><br>
 
-    <div>
-        <label>客先名（部分一致）</label>
-        <input type="text" id="customer">
-    </div>
+客先名（部分一致）<br>
+<input id="name"><br>
 
-    <button type="button" onclick="search()">検索</button>
-</form>
+<button type="button" onclick="search()">検索</button>
 
-<table id="resultTable" style="display:none;">
-    <thead>
-        <tr>
-            <th>客先№</th>
-            <th>会社名</th>
-            <th>TEL</th>
-            <th>FAX</th>
-            <th>県</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
+<table>
+  <tr>
+    <th>客先№</th>
+    <th>会社名</th>
+    <th>TEL</th>
+    <th>FAX</th>
+    <th>県</th>
+  </tr>
+  <tbody id="result"></tbody>
 </table>
 
 <script>
-let data = [];
+let rows = [];
 
-// CSV 読み込み
-fetch('CustomerMaster.csv')
-    .then(response => response.text())
-    .then(text => {
-        const rows = text.split('\n').slice(1);
-        rows.forEach(row => {
-            const cols = row.split(',');
-            if (cols.length >= 5) {
-                data.push({
-                    code: cols[0],
-                    name: cols[1],
-                    tel: cols[2],
-                    fax: cols[3],
-                    pref: cols[4]
-                });
-            }
-        });
-    });
-
-// 数字だけ抽出
-function normalize(value) {
-    return value.replace(/\D/g, '');
-}
+fetch("CustomerSearch.csv")
+  .then(r => r.text())
+  .then(t => {
+    const lines = t.trim().split("\n");
+    lines.shift();
+    rows = lines.map(l => l.split(","));
+  });
 
 function search() {
-    const tel = normalize(document.getElementById('tel').value);
-    const fax = normalize(document.getElementById('fax').value);
-    const customer = document.getElementById('customer').value;
+  const tel = document.getElementById("tel").value;
+  const fax = document.getElementById("fax").value;
+  const name = document.getElementById("name").value;
+  const out = document.getElementById("result");
+  out.innerHTML = "";
 
-    const result = data.filter(r => {
-        let hit = true;
+  rows.forEach(r => {
+    const telN = r[2].replace(/-/g,"");
+    const faxN = r[3].replace(/-/g,"");
 
-        if (tel) {
-            hit = hit && normalize(r.tel).includes(tel);
-        }
-        if (fax) {
-            hit = hit && normalize(r.fax).includes(fax);
-        }
-        if (customer) {
-            hit = hit && r.name.includes(customer);
-        }
-        return hit;
-    });
-
-    const tbody = document.querySelector('#resultTable tbody');
-    tbody.innerHTML = '';
-
-    result.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${r.code}</td>
-            <td>${r.name}</td>
-            <td>${r.tel}</td>
-            <td>${r.fax}</td>
-            <td>${r.pref}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    document.getElementById('resultTable').style.display = 'table';
+    if (
+      (!tel || telN.includes(tel)) &&
+      (!fax || faxN.includes(fax)) &&
+      (!name || r[1].includes(name))
+    ) {
+      out.innerHTML += `
+        <tr>
+          <td>${r[0]}</td>
+          <td>${r[1]}</td>
+          <td>${r[2]}</td>
+          <td>${r[3]}</td>
+          <td>${r[4]}</td>
+        </tr>
+      `;
+    }
+  });
 }
 </script>
 
