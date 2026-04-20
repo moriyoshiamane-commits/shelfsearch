@@ -1,112 +1,141 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>客先検索</title>
-
-<style>
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16px;
-  margin: 10px;
-}
-
-.search-input {
-  width: 260px;
-  padding: 6px;
-  font-size: 16px;
-  margin-bottom: 6px;
-}
-
-.search-button {
-  padding: 6px 14px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #ffffff;
-  background: linear-gradient(#4c8bf5, #356ac3);
-  border: 1px solid #2f5fb3;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-td {
-  border-bottom: 1px solid #ccc;
-  padding: 6px 4px;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>客先検索</title>
+    <style>
+        body {
+            font-family: "Meiryo", Arial, sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: inline-block;
+            width: 180px;
+            margin-top: 8px;
+        }
+        input {
+            width: 260px;
+            padding: 4px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 6px 20px;
+            font-size: 14px;
+        }
+        table {
+            border-collapse: collapse;
+            margin-top: 25px;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #999;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
-
 <body>
 
 <h2>客先検索</h2>
 
-電話番号（ハイフン無し）：<br>
-<input id="tel" class="search-input"><br>
+<form id="searchForm">
+    <div>
+        <label>電話番号（ハイフン無し）</label>
+        <input type="text" id="tel">
+    </div>
 
-FAX番号（ハイフン無し）：<br>
-<input id="fax" class="search-input"><br>
+    <div>
+        <label>FAX番号（ハイフン無し）</label>
+        <input type="text" id="fax">
+    </div>
 
-客先名（部分一致）：<br>
-<input id="name" class="search-input"><br>
+    <div>
+        <label>客先名（部分一致）</label>
+        <input type="text" id="customer">
+    </div>
 
-<button type="button" class="search-button" onclick="search()">検索</button>
+    <button type="button" onclick="search()">検索</button>
+</form>
 
-<table>
-  <tbody id="result"></tbody>
+<table id="resultTable" style="display:none;">
+    <thead>
+        <tr>
+            <th>客先№</th>
+            <th>会社名</th>
+            <th>TEL</th>
+            <th>FAX</th>
+            <th>県</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
 </table>
 
 <script>
 let data = [];
 
-// カンマ入りCSV対応パーサ
-function parseCSVLine(line) {
-  const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
-  return line.match(regex).map(v => v.replace(/^"|"$/g, ""));
+// CSV 読み込み
+fetch('CustomerMaster.csv')
+    .then(response => response.text())
+    .then(text => {
+        const rows = text.split('\n').slice(1);
+        rows.forEach(row => {
+            const cols = row.split(',');
+            if (cols.length >= 5) {
+                data.push({
+                    code: cols[0],
+                    name: cols[1],
+                    tel: cols[2],
+                    fax: cols[3],
+                    pref: cols[4]
+                });
+            }
+        });
+    });
+
+// 数字だけ抽出
+function normalize(value) {
+    return value.replace(/\D/g, '');
 }
 
-fetch("CustomerSearch.csv")
-  .then(r => r.text())
-  .then(text => {
-    const lines = text.trim().split("\n");
-    lines.shift();
-    data = lines.map(l => parseCSVLine(l));
-  });
-
 function search() {
-  const tel = document.getElementById("tel").value.trim();
-  const fax = document.getElementById("fax").value.trim();
-  const name = document.getElementById("name").value.trim();
-  const result = document.getElementById("result");
-  result.innerHTML = "";
+    const tel = normalize(document.getElementById('tel').value);
+    const fax = normalize(document.getElementById('fax').value);
+    const customer = document.getElementById('customer').value;
 
-  data.forEach(row => {
-    const telNorm = (row[2] || "").replace(/-/g, "");
-    const faxNorm = (row[3] || "").replace(/-/g, "");
+    const result = data.filter(r => {
+        let hit = true;
 
-    if (
-      (!tel || telNorm.includes(tel)) &&
-      (!fax || faxNorm.includes(fax)) &&
-      (!name || (row[1] || "").includes(name))
-    ) {
-      result.innerHTML += `
-        <tr>
-          <td>
-            ${row[0]}<br>
-            ${row[1]}<br>
-            TEL:${row[2]} / FAX:${row[3]}<br>
-            ${row[4]}
-          </td>
-        </tr>
-      `;
-    }
-  });
+        if (tel) {
+            hit = hit && normalize(r.tel).includes(tel);
+        }
+        if (fax) {
+            hit = hit && normalize(r.fax).includes(fax);
+        }
+        if (customer) {
+            hit = hit && r.name.includes(customer);
+        }
+        return hit;
+    });
+
+    const tbody = document.querySelector('#resultTable tbody');
+    tbody.innerHTML = '';
+
+    result.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.code}</td>
+            <td>${r.name}</td>
+            <td>${r.tel}</td>
+            <td>${r.fax}</td>
+            <td>${r.pref}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('resultTable').style.display = 'table';
 }
 </script>
 
