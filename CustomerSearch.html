@@ -27,12 +27,17 @@ body {
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
+  cursor: pointer;
+}
+
+.search-button:active {
+  opacity: 0.9;
 }
 
 table {
+  width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  font-size: 16px;
 }
 
 td {
@@ -55,7 +60,8 @@ FAX番号（ハイフン無し）：<br>
 客先名（部分一致）：<br>
 <input id="name" class="search-input"><br>
 
-<button class="search-button" onclick="search()">検索</button>
+<!-- ★ ここが重要：type="button" を必ず指定 -->
+<button type="button" class="search-button" onclick="search()">検索</button>
 
 <table>
   <tbody id="result"></tbody>
@@ -64,11 +70,12 @@ FAX番号（ハイフン無し）：<br>
 <script>
 let data = [];
 
+// CSV読み込み
 fetch("CustomerSearch.csv")
   .then(res => res.text())
   .then(text => {
     const lines = text.trim().split("\n");
-    lines.shift();
+    lines.shift(); // ヘッダ削除
     data = lines.map(line => line.split(","));
   });
 
@@ -76,19 +83,19 @@ function search() {
   const tel = document.getElementById("tel").value.trim();
   const fax = document.getElementById("fax").value.trim();
   const name = document.getElementById("name").value.trim();
-  const area = document.getElementById("result");
-  area.innerHTML = "";
+  const result = document.getElementById("result");
+  result.innerHTML = "";
 
   data.forEach(row => {
-    const telNorm = row[2].replace(/-/g, "");
-    const faxNorm = row[3].replace(/-/g, "");
+    const telNorm = (row[2] || "").replace(/-/g, "");
+    const faxNorm = (row[3] || "").replace(/-/g, "");
 
     if (
       (!tel || telNorm.includes(tel)) &&
       (!fax || faxNorm.includes(fax)) &&
-      (!name || row[1].includes(name))
+      (!name || (row[1] || "").includes(name))
     ) {
-      area.innerHTML += `
+      result.innerHTML += `
         <tr>
           <td>
             ${row[0]}<br>
