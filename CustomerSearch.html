@@ -7,7 +7,7 @@
 
 <style>
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, sans-serif;
   font-size: 16px;
   margin: 10px;
 }
@@ -26,8 +26,8 @@ button {
 }
 
 table {
-  margin-top: 10px;
   border-collapse: collapse;
+  margin-top: 10px;
   width: 100%;
 }
 
@@ -55,19 +55,22 @@ FAX番号（ハイフン無し）<br>
 <button type="button" onclick="search()">検索</button>
 
 <table>
-  <tr>
-    <th>客先№</th>
-    <th>会社名</th>
-    <th>TEL</th>
-    <th>FAX</th>
-    <th>県</th>
-  </tr>
+  <thead>
+    <tr>
+      <th>客先№</th>
+      <th>会社名</th>
+      <th>TEL</th>
+      <th>FAX</th>
+      <th>県</th>
+    </tr>
+  </thead>
   <tbody id="result"></tbody>
 </table>
 
 <script>
 let rows = [];
 
+/* 成功イメージと同じ「単純CSV前提」 */
 fetch("CustomerSearch.csv")
   .then(r => r.text())
   .then(t => {
