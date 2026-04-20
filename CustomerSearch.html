@@ -8,11 +8,10 @@
 <style>
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16px;           /* ← スマホでも小さくならない */
+  font-size: 16px;
   margin: 10px;
 }
 
-/* 入力欄 */
 .search-input {
   width: 260px;
   padding: 6px;
@@ -20,7 +19,6 @@ body {
   margin-bottom: 6px;
 }
 
-/* 検索ボタン（統一UI） */
 .search-button {
   padding: 6px 14px;
   font-size: 16px;
@@ -29,33 +27,17 @@ body {
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
-  cursor: pointer;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.25);
 }
 
-.search-button:hover {
-  background: linear-gradient(#5a95f6, #3b73cf);
-}
-
-.search-button:active {
-  transform: translateY(1px);
-}
-
-/* 結果テーブル */
 table {
   border-collapse: collapse;
   margin-top: 10px;
-  font-size: 16px;           /* ← 結果も大きく */
+  font-size: 16px;
 }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 6px;
-  text-align: left;
-}
-
-th {
-  background-color: #f0f0f0;
+td {
+  border-bottom: 1px solid #ccc;
+  padding: 6px 4px;
 }
 </style>
 </head>
@@ -76,27 +58,17 @@ FAX番号（ハイフン無し）：<br>
 <button class="search-button" onclick="search()">検索</button>
 
 <table>
-  <thead>
-    <tr>
-      <th>客先№</th>
-      <th>会社名</th>
-      <th>TEL</th>
-      <th>FAX</th>
-      <th>県</th>
-    </tr>
-  </thead>
   <tbody id="result"></tbody>
 </table>
 
 <script>
 let data = [];
 
-/* CSV読み込み（UTF-8） */
 fetch("CustomerSearch.csv")
   .then(res => res.text())
   .then(text => {
     const lines = text.trim().split("\n");
-    lines.shift(); // ヘッダ行除外
+    lines.shift();
     data = lines.map(line => line.split(","));
   });
 
@@ -104,7 +76,6 @@ function search() {
   const tel = document.getElementById("tel").value.trim();
   const fax = document.getElementById("fax").value.trim();
   const name = document.getElementById("name").value.trim();
-
   const area = document.getElementById("result");
   area.innerHTML = "";
 
@@ -119,11 +90,12 @@ function search() {
     ) {
       area.innerHTML += `
         <tr>
-          <td>${row[0]}</td>
-          <td>${row[1]}</td>
-          <td>${row[2]}</td>
-          <td>${row[3]}</td>
-          <td>${row[4]}</td>
+          <td>
+            ${row[0]}<br>
+            ${row[1]}<br>
+            TEL:${row[2]} / FAX:${row[3]}<br>
+            ${row[4]}
+          </td>
         </tr>
       `;
     }
