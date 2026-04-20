@@ -30,10 +30,6 @@ body {
   cursor: pointer;
 }
 
-.search-button:active {
-  opacity: 0.9;
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -60,7 +56,6 @@ FAX番号（ハイフン無し）：<br>
 客先名（部分一致）：<br>
 <input id="name" class="search-input"><br>
 
-<!-- ★ ここが重要：type="button" を必ず指定 -->
 <button type="button" class="search-button" onclick="search()">検索</button>
 
 <table>
@@ -70,13 +65,18 @@ FAX番号（ハイフン無し）：<br>
 <script>
 let data = [];
 
-// CSV読み込み
+// カンマ入りCSV対応パーサ
+function parseCSVLine(line) {
+  const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
+  return line.match(regex).map(v => v.replace(/^"|"$/g, ""));
+}
+
 fetch("CustomerSearch.csv")
-  .then(res => res.text())
+  .then(r => r.text())
   .then(text => {
     const lines = text.trim().split("\n");
-    lines.shift(); // ヘッダ削除
-    data = lines.map(line => line.split(","));
+    lines.shift();
+    data = lines.map(l => parseCSVLine(l));
   });
 
 function search() {
@@ -112,4 +112,3 @@ function search() {
 
 </body>
 </html>
-``
