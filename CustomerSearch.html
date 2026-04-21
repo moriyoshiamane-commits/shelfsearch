@@ -12,7 +12,6 @@ body {
   margin: 10px;
 }
 
-/* 入力欄 */
 input {
   width: 260px;
   padding: 6px;
@@ -20,19 +19,17 @@ input {
   margin-bottom: 6px;
 }
 
-/* 検索ボタン（棚番検索と同色） */
 button {
   padding: 6px 16px;
   font-size: 16px;
   font-weight: bold;
   color: #ffffff;
-  background: linear-gradient(#4c8bf5, #356ac3);
+  background: linear-gradient(#4c8bf5, #356ac3); /* 棚番検索と同色 */
   border: 1px solid #2f5fb3;
   border-radius: 6px;
   cursor: pointer;
 }
 
-/* 検索結果 */
 .result {
   border-top: 1px solid #ccc;
   margin-top: 12px;
@@ -42,7 +39,6 @@ button {
 .item {
   border-bottom: 1px solid #ccc;
   padding: 8px 0;
-  font-size: 15px;
 }
 </style>
 </head>
@@ -67,32 +63,13 @@ FAX番号（ハイフン無し）<br>
 <script>
 let rows = [];
 
-// カンマ対応CSV読み込み
-function parseCSV(line) {
-  const out = [];
-  let cur = "";
-  let inQuote = false;
-
-  for (let c of line) {
-    if (c === '"') {
-      inQuote = !inQuote;
-    } else if (c === ',' && !inQuote) {
-      out.push(cur);
-      cur = "";
-    } else {
-      cur += c;
-    }
-  }
-  out.push(cur);
-  return out.map(v => v.replace(/^"|"$/g, ""));
-}
-
+/* 成功していた時と同じ単純CSVロジック */
 fetch("CustomerSearch.csv")
   .then(r => r.text())
   .then(t => {
     const lines = t.trim().split("\n");
-    lines.shift();
-    rows = lines.map(l => parseCSV(l));
+    lines.shift();  // ヘッダ削除
+    rows = lines.map(l => l.split(","));
   });
 
 function search() {
@@ -103,13 +80,10 @@ function search() {
   area.innerHTML = "";
 
   rows.forEach(r => {
-    const telN = (r[2] || "").replace(/-/g,"");
-    const faxN = (r[3] || "").replace(/-/g,"");
-
     if (
-      (!tel || telN.includes(tel)) &&
-      (!fax || faxN.includes(fax)) &&
-      (!name || (r[1] || "").includes(name))
+      (!tel || r[2].replace(/-/g,"").includes(tel)) &&
+      (!fax || r[3].replace(/-/g,"").includes(fax)) &&
+      (!name || r[1].includes(name))
     ) {
       area.innerHTML += `
         <div class="item">
