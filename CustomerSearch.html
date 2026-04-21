@@ -1,143 +1,113 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>客先検索</title>
-    <style>
-        body {
-            font-family: "Meiryo", Arial, sans-serif;
-            margin: 20px;
-        }
-        label {
-            display: inline-block;
-            width: 180px;
-            margin-top: 8px;
-        }
-        input {
-            width: 260px;
-            padding: 4px;
-        }
-        button {
-            margin-top: 15px;
-            padding: 6px 20px;
-            font-size: 14px;
-        }
-        table {
-            border-collapse: collapse;
-            margin-top: 25px;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #999;
-            padding: 6px;
-            text-align: left;
-        }
-        th {
-            background-color: #f0f0f0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客先検索</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  margin: 10px;
+}
+
+/* 入力欄 */
+input {
+  width: 260px;
+  padding: 6px;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+/* 検索ボタン（棚番検索と同色） */
+button {
+  padding: 6px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(#4c8bf5, #356ac3);
+  border: 1px solid #2f5fb3;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 検索結果 */
+.result {
+  border-top: 1px solid #ccc;
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.item {
+  border-bottom: 1px solid #ccc;
+  padding: 8px 0;
+}
+</style>
 </head>
+
 <body>
 
 <h2>客先検索</h2>
 
-<form id="searchForm">
-    <div>
-        <label>電話番号（ハイフン無し）</label>
-        <input type="text" id="tel">
-    </div>
+電話番号（ハイフン無し）<br>
+<input id="tel"><br>
 
-    <div>
-        <label>FAX番号（ハイフン無し）</label>
-        <input type="text" id="fax">
-    </div>
+FAX番号（ハイフン無し）<br>
+<input id="fax"><br>
 
-    <div>
-        <label>客先名（部分一致）</label>
-        <input type="text" id="customer">
-    </div>
+客先名（部分一致）<br>
+<input id="name"><br>
 
-    <button type="button" onclick="search()">検索</button>
-</form>
+<button type="button" onclick="search()">検索</button>
 
-<table id="resultTable" style="display:none;">
-    <thead>
-        <tr>
-            <th>客先№</th>
-            <th>会社名</th>
-            <th>TEL</th>
-            <th>FAX</th>
-            <th>県</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<div id="result" class="result"></div>
 
 <script>
-let data = [];
+let rows = [];
 
-// CSV 読み込み
-fetch('CustomerMaster.csv')
-    .then(response => response.text())
-    .then(text => {
-        const rows = text.split('\n').slice(1);
-        rows.forEach(row => {
-            const cols = row.split(',');
-            if (cols.length >= 5) {
-                data.push({
-                    code: cols[0],
-                    name: cols[1],
-                    tel: cols[2],
-                    fax: cols[3],
-                    pref: cols[4]
-                });
-            }
-        });
-    });
-
-// 数字だけ抽出
-function normalize(value) {
-    return value.replace(/\D/g, '');
-}
+/*
+ CSV読み込み
+ ※ 今朝「確実に動いていた」方法と同じ
+*/
+fetch("CustomerSearch.csv")
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.trim().split("\n");
+    lines.shift(); // ヘッダ削除
+    rows = lines.map(line => line.split(","));
+  });
 
 function search() {
-    const tel = normalize(document.getElementById('tel').value);
-    const fax = normalize(document.getElementById('fax').value);
-    const customer = document.getElementById('customer').value;
+  const tel = document.getElementById("tel").value.trim();
+  const fax = document.getElementById("fax").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const area = document.getElementById("result");
+  area.innerHTML = "";
 
-    const result = data.filter(r => {
-        let hit = true;
+  rows.forEach(r => {
+    const telN = (r[2] || "").replace(/-/g, "");
+    const faxN = (r[3] || "").replace(/-/g, "");
 
-        if (tel) {
-            hit = hit && normalize(r.tel).includes(tel);
-        }
-        if (fax) {
-            hit = hit && normalize(r.fax).includes(fax);
-        }
-        if (customer) {
-            hit = hit && r.name.includes(customer);
-        }
-        return hit;
-    });
-
-    const tbody = document.querySelector('#resultTable tbody');
-    tbody.innerHTML = '';
-
-    result.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${r.code}</td>
-            <td>${r.name}</td>
-            <td>${r.tel}</td>
-            <td>${r.fax}</td>
-            <td>${r.pref}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    document.getElementById('resultTable').style.display = 'table';
+    if (
+      (!tel || telN.includes(tel)) &&
+      (!fax || faxN.includes(fax)) &&
+      (!name || (r[1] || "").includes(name))
+    ) {
+      area.innerHTML += `
+        <div class="item">
+          客先№：${r[0]}<br>
+          会社名：${r[1]}<br>
+          TEL：${r[2]}<br>
+          FAX：${r[3]}<br>
+          県：${r[4]}
+        </div>
+      `;
+    }
+  });
 }
 </script>
 
 </body>
 </html>
+``
