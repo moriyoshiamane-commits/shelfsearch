@@ -20,12 +20,12 @@ input {
   margin-bottom: 6px;
 }
 
-/* 検索ボタン（棚番検索と同色） */
+/* 検索ボタン（棚番検索と同系色） */
 button {
   padding: 6px 16px;
   font-size: 16px;
   font-weight: bold;
-  color: #fff;
+  color: #ffffff;
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
@@ -64,17 +64,26 @@ FAX番号（ハイフン無し）<br>
 <div id="result" class="result"></div>
 
 <script>
+/*
+  CustomerMaster.csv 前提
+  列順：
+  [0] 客先コード
+  [1] 会社名
+  [2] TEL
+  [3] FAX
+  [4] 県（地区名）
+  [5]～
+*/
+
 let rows = [];
 
-/*
- CSV読み込み
- ※ 今朝「確実に動いていた」方法と同じ
-*/
-fetch("CustomerSearch.csv")
+/* CSV読み込み（今朝動いていた方式に完全固定） */
+fetch("CustomerMaster.csv")
   .then(res => res.text())
   .then(text => {
-    const lines = text.trim().split("\n");
-    lines.shift(); // ヘッダ削除
+    // 改行差異対応
+    const lines = text.replace(/\r/g, "").trim().split("\n");
+    lines.shift(); // ヘッダ行削除
     rows = lines.map(line => line.split(","));
   });
 
@@ -86,13 +95,15 @@ function search() {
   area.innerHTML = "";
 
   rows.forEach(r => {
-    const telN = (r[2] || "").replace(/-/g, "");
-    const faxN = (r[3] || "").replace(/-/g, "");
+    // 安全に正規化（空欄対策）
+    const telNorm = (r[2] || "").replace(/-/g, "");
+    const faxNorm = (r[3] || "").replace(/-/g, "");
+    const company = (r[1] || "");
 
     if (
-      (!tel || telN.includes(tel)) &&
-      (!fax || faxN.includes(fax)) &&
-      (!name || (r[1] || "").includes(name))
+      (!tel || telNorm.includes(tel)) &&
+      (!fax || faxNorm.includes(fax)) &&
+      (!name || company.includes(name))
     ) {
       area.innerHTML += `
         <div class="item">
