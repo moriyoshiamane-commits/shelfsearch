@@ -1,152 +1,50 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>客先検索</title>
-    <style>
-        body {
-            font-family: "Meiryo", Arial, sans-serif;
-            margin: 20px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>業務検索メニュー</title>
 
-        h2 {
-            margin-bottom: 10px;
-        }
-
-        .form-row {
-            margin-bottom: 8px;
-        }
-
-        label {
-            display: inline-block;
-            width: 220px;
-        }
-
-        input {
-            width: 260px;
-            padding: 4px;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 6px 20px;
-            font-size: 14px;
-        }
-
-        table {
-            border-collapse: collapse;
-            margin-top: 25px;
-            width: 100%;
-        }
-
-        th, td {
-            border: 1px solid #999;
-            padding: 6px;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        th {
-            background-color: #f0f0f0;
-        }
-    </style>
-</head>
-<body>
-
-<h2>客先検索</h2>
-
-<div class="form-row">
-    <label>電話番号（ハイフン無し）</label>
-    <input type="text" id="tel">
-</div>
-
-<div class="form-row">
-    <label>FAX番号（ハイフン無し）</label>
-    <input type="text" id="fax">
-</div>
-
-<div class="form-row">
-    <label>客先名（部分一致）</label>
-    <input type="text" id="customer">
-</div>
-
-<button onclick="searchCustomer()">検索</button>
-
-<table id="resultTable" style="display:none;">
-    <thead>
-        <tr>
-            <th>客先№</th>
-            <th>会社名</th>
-            <th>TEL</th>
-            <th>FAX</th>
-            <th>県</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<script>
-let customers = [];
-
-// CSVファイル読み込み
-fetch('CustomerMaster.csv')
-    .then(response => response.text())
-    .then(text => {
-        const lines = text.split('\n').slice(1);
-        lines.forEach(line => {
-            const cols = line.split(',');
-            if (cols.length >= 5) {
-                customers.push({
-                    code: cols[0],
-                    name: cols[1],
-                    tel: cols[2],
-                    fax: cols[3],
-                    pref: cols[4]
-                });
-            }
-        });
-    });
-
-// 数字だけ抽出（ハイフン・空白除去）
-function normalizeNumber(value) {
-    return value ? value.replace(/\D/g, '') : '';
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 10px;
+  font-size: 16px;
 }
 
-function searchCustomer() {
-    const telInput = normalizeNumber(document.getElementById('tel').value);
-    const faxInput = normalizeNumber(document.getElementById('fax').value);
-    const nameInput = document.getElementById('customer').value;
+h2 {
+  margin-bottom: 12px;
+}
 
-    const results = customers.filter(c => {
-        let ok = true;
+/* 左寄せ・幅固定 */
+.menu {
+  max-width: 280px;
+}
 
-        if (telInput) {
-            ok = ok && normalizeNumber(c.tel).includes(telInput);
-        }
+.menu a {
+  display: block;
+  padding: 10px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: bold;
+  background: linear-gradient(#4c8bf5, #356ac3);
+  border: 1px solid #2f5fb3;
+  border-radius: 6px;
+}
+</style>
+</head>
 
-        if (faxInput) {
-            ok = ok && normalizeNumber(c.fax).includes(faxInput);
-        }
+<body>
 
-        if (nameInput) {
-            ok = ok && c.name.includes(nameInput);
-        }
+<h2>業務検索</h2>
 
-        return ok;
-    });
+<div class="menu">
+  <a href="CustomerSearch.html">客先検索</a>
+  <a href="AfterSupportSearch.html">アフター対応</a>
+  <a href="ShelfSearch.html">棚番検索</a>
+  <a href="YamatoSearch.html">ヤマト運輸</a>
+</div>
 
-    const tbody = document.querySelector('#resultTable tbody');
-    tbody.innerHTML = '';
-
-    results.forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${c.code}</td>
-            <td>${c.name}</td>
-            <td>${c.tel}</td>
-            <td>${c.fax}</td>
-            <td>${c.pref}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
+</body>
+</html>
