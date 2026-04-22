@@ -47,6 +47,9 @@ button {
 電話番号（ハイフン無し・部分一致）<br>
 <input id="tel"><br>
 
+BOX名（部分一致・大小文字区別なし）<br>
+<input id="box"><br>
+
 機械番号（部分一致・大小文字区別なし）<br>
 <input id="machine"><br>
 
@@ -61,16 +64,16 @@ button {
 let rows = [];
 
 /*
- CSV列構成（0始まり）
- 0: 客先No
- 1: 客先名
- 2: 機種名
- 3: 機種名称
- 4: 機械№
- 5: BOX名   ← ★ F列（6番目）
- 6: 住所
- 7: 郵便番号
- 8: 電話番号
+CSV列構成（0始まり）
+0: 客先No
+1: 客先名
+2: 機種名
+3: 機種名称
+4: 機械No
+5: BOX名
+6: 客先住所
+7: 郵便番号
+8: 電話番号
 */
 fetch("MachineMaster_AfterSupport.csv")
   .then(res => res.text())
@@ -83,13 +86,15 @@ fetch("MachineMaster_AfterSupport.csv")
 function search() {
   const customerInput = document.getElementById("customer").value.trim();
   const telInput      = document.getElementById("tel").value.replace(/-/g, "").trim();
+  const boxInput      = document.getElementById("box").value.trim().toLowerCase();
   const machineInput  = document.getElementById("machine").value.trim().toLowerCase();
   const modelInput    = document.getElementById("model").value.trim().toLowerCase();
   const area          = document.getElementById("result");
+
   area.innerHTML = "";
 
-  // 完全空検索のみ防止
-  if (!customerInput && !telInput && !machineInput && !modelInput) {
+  /* 完全空検索のみ防止（入口が複数あるため） */
+  if (!customerInput && !telInput && !boxInput && !machineInput && !modelInput) {
     return;
   }
 
@@ -97,23 +102,16 @@ function search() {
     const customerName = r[1] || "";
     const modelName    = r[3] || "";
     const machineNo    = r[4] || "";
-
-    // ★ BOX名：F列が存在しない行にも対応
-    const boxName =
-      (r.length > 5 && r[5] && r[5].trim() !== "")
-        ? r[5]
-        : "—";
-
-    const telNorm = (r[8] || "").replace(/-/g, "");
-
-    const modelLower   = modelName.toLowerCase();
-    const machineLower = machineNo.toLowerCase();
+    const boxRaw       = r[5] || "";
+    const boxName      = boxRaw !== "" ? boxRaw : "—";
+    const telNorm      = (r[8] || "").replace(/-/g, "");
 
     if (
       (!customerInput || customerName.includes(customerInput)) &&
       (!telInput      || telNorm.includes(telInput)) &&
-      (!machineInput  || machineLower.includes(machineInput)) &&
-      (!modelInput    || modelLower.includes(modelInput))
+      (!boxInput      || boxRaw.toLowerCase().includes(boxInput)) &&
+      (!machineInput  || machineNo.toLowerCase().includes(machineInput)) &&
+      (!modelInput    || modelName.toLowerCase().includes(modelInput))
     ) {
       area.innerHTML += `
         <div class="item">
@@ -131,4 +129,3 @@ function search() {
 
 </body>
 </html>
-``
