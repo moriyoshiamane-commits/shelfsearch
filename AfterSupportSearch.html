@@ -64,10 +64,10 @@ let rows = [];
  CSV列構成（0始まり）
  0: 客先No
  1: 客先名
- 2: 機種名（取出機など）
- 3: 機種名称（型式）
+ 2: 機種名
+ 3: 機種名称
  4: 機械№
- 5: BOX名
+ 5: BOX名   ← ★ F列（6番目）
  6: 住所
  7: 郵便番号
  8: 電話番号
@@ -76,7 +76,7 @@ fetch("MachineMaster_AfterSupport.csv")
   .then(res => res.text())
   .then(text => {
     const lines = text.replace(/\r/g, "").trim().split("\n");
-    lines.shift(); // ヘッダ削除
+    lines.shift(); // ヘッダー削除
     rows = lines.map(line => line.split(","));
   });
 
@@ -97,8 +97,14 @@ function search() {
     const customerName = r[1] || "";
     const modelName    = r[3] || "";
     const machineNo    = r[4] || "";
-    const boxName      = r[5] || "—"; // BOX名が無い機械にも対応
-    const telNorm      = (r[8] || "").replace(/-/g, "");
+
+    // ★ BOX名：F列が存在しない行にも対応
+    const boxName =
+      (r.length > 5 && r[5] && r[5].trim() !== "")
+        ? r[5]
+        : "—";
+
+    const telNorm = (r[8] || "").replace(/-/g, "");
 
     const modelLower   = modelName.toLowerCase();
     const machineLower = machineNo.toLowerCase();
@@ -125,3 +131,4 @@ function search() {
 
 </body>
 </html>
+``
