@@ -1,143 +1,107 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>アフター対応 機械検索</title>
+<title>アフター対応検索</title>
 
 <style>
 body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   margin: 10px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* 入力欄 */
-.search-input {
+input {
   width: 260px;
   padding: 6px;
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 6px;
 }
 
-/* 検索ボタン（統一UI） */
-.search-button {
-  padding: 6px 14px;
-  font-size: 14px;
+button {
+  padding: 6px 16px;
+  font-size: 16px;
   font-weight: bold;
   color: #ffffff;
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
   cursor: pointer;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.25);
 }
 
-.search-button:hover {
-  background: linear-gradient(#5a95f6, #3b73cf);
-}
-
-.search-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
-}
-
-/* 結果表示 */
 .result {
-  border: 1px solid #ccc;
-  padding: 8px;
-  margin: 6px 0;
+  margin-top: 12px;
 }
 
-.machine-no {
-  font-size: 18px;
-  font-weight: bold;
-  color: #d32f2f;
+.item {
+  border-bottom: 1px solid #ccc;
+  padding: 8px 0;
 }
 </style>
 </head>
 
 <body>
 
-<h2>アフター対応 機械検索</h2>
+<h2>アフター対応検索</h2>
 
-客先名：<br>
-<input id="customer" class="search-input"><br>
+機械番号（部分一致）<br>
+<input id="machine"><br>
 
-電話番号：<br>
-<input id="tel" class="search-input"><br>
+型式（部分一致）<br>
+<input id="model"><br>
 
-機種名称：<br>
-<input id="modelName" class="search-input"><br>
+<button type="button" onclick="search()">検索</button>
 
-機械№：<br>
-<input id="machineNo" class="search-input"><br>
-
-BOX名：<br>
-<input id="box" class="search-input"><br>
-
-<button class="search-button" onclick="search()">検索</button>
-
-<div id="results"></div>
+<div id="result" class="result"></div>
 
 <script>
-let records = [];
+let rows = [];
 
-/* CSV 読み込み（UTF-8） */
-fetch("MachineMaster_AfterSupport.csv")
+/*
+  CSV 読み込み（現行仕様そのまま）
+*/
+fetch("AfterSupport.csv")
   .then(res => res.text())
   .then(text => {
-    const lines = text.trim().split("\n");
-    lines.shift(); // ヘッダ行を除外
-
-    records = lines.map(line => {
-      const cols = line.split(",");
-      return {
-        customer: cols[1],      // 客先名(B)
-        model: cols[2],         // 機種名（表示用）(C)
-        modelName: cols[3],     // 機種名称（検索対象）(D)
-        machineNo: cols[4],     // 機械№(E)
-        box: cols[5],           // BOX名(F)
-        tel: cols[8]            // 電話番号(I)
-      };
-    });
+    const lines = text.replace(/\r/g, "").trim().split("\n");
+    lines.shift(); // ヘッダ削除
+    rows = lines.map(line => line.split(","));
   });
 
 function search() {
-  const c = document.getElementById("customer").value.trim().toLowerCase();
-  const t = document.getElementById("tel").value.trim();
-  const mn = document.getElementById("modelName").value.trim().toLowerCase();
-  const no = document.getElementById("machineNo").value.trim();
-  const b = document.getElementById("box").value.trim().toLowerCase();
-
-  const area = document.getElementById("results");
+  const machine = document.getElementById("machine").value.trim();
+  const model   = document.getElementById("model").value.trim();
+  const area    = document.getElementById("result");
   area.innerHTML = "";
 
-  const hits = records.filter(r =>
-    (!c || r.customer.toLowerCase().includes(c)) &&
-    (!t || r.tel.replace(/-/g, "").includes(t.replace(/-/g, ""))) &&
-    (!mn || r.modelName.toLowerCase().includes(mn)) &&
-    (!no || r.machineNo.includes(no)) &&
-    (!b || r.box.toLowerCase().includes(b))
-  );
-
-  if (hits.length === 0) {
-    area.innerHTML = "該当なし";
+  /*
+    ✅ ①対策
+    両方とも未入力なら、処理しない
+    （= 全件ループ防止）
+  */
+  if (!machine && !model) {
     return;
   }
 
-  hits.forEach(r => {
-    area.innerHTML += `
-      <div class="result">
-        <div>客先名：${r.customer}</div>
-        <div>電話番号：${r.tel}</div>
-        <div>機種名：${r.model}</div>
-        <div>機種名称：${r.modelName}</div>
-        <div>BOX名：${r.box}</div>
-        <div class="machine-no">機械№：${r.machineNo}</div>
-      </div>
-    `;
+  rows.forEach(r => {
+    const machineNo = r[4] || "";
+    const modelName = r[3] || "";
+
+    if (
+      (!machine || machineNo.includes(machine)) &&
+      (!model   || modelName.includes(model))
+    ) {
+      area.innerHTML += `
+        <div class="item">
+          受付日：${r[0]}<br>
+          客先名：${r[1]}<br>
+          内容　：${r[2]}<br>
+          型式　：${r[3]}<br>
+          機械№：${r[4]}
+        </div>
+      `;
+    }
   });
 }
 </script>
