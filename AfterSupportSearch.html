@@ -23,7 +23,7 @@ button {
   padding: 6px 16px;
   font-size: 16px;
   font-weight: bold;
-  color: #fff;
+  color: #ffffff;
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
@@ -51,10 +51,10 @@ button {
 電話番号（ハイフン無し・部分一致）<br>
 <input id="tel"><br>
 
-機械番号（部分一致）<br>
+機械番号（部分一致・大文字小文字区別なし）<br>
 <input id="machine"><br>
 
-型式（部分一致）<br>
+機種名称／型式（部分一致・大文字小文字区別なし）<br>
 <input id="model"><br>
 
 <button type="button" onclick="search()">検索</button>
@@ -64,6 +64,19 @@ button {
 <script>
 let rows = [];
 
+/*
+ CSV読み込み
+ 列構成（0始まり）：
+ 0: 客先No
+ 1: 客先名
+ 2: 機種名（取出機など）
+ 3: 機種名称（型式）
+ 4: 機械No
+ 5: BOX名
+ 6: 住所
+ 7: 郵便番号
+ 8: 電話番号
+*/
 fetch("MachineMaster_AfterSupport.csv")
   .then(res => res.text())
   .then(text => {
@@ -73,37 +86,40 @@ fetch("MachineMaster_AfterSupport.csv")
   });
 
 function search() {
-  const customer = document.getElementById("customer").value.trim();
-  const tel      = document.getElementById("tel").value.trim();
-  const machine  = document.getElementById("machine").value.trim();
-  const model    = document.getElementById("model").value.trim();
-  const area     = document.getElementById("result");
+  const customerInput = document.getElementById("customer").value.trim();
+  const telInput      = document.getElementById("tel").value.replace(/-/g, "").trim();
+  const machineInput  = document.getElementById("machine").value.trim().toLowerCase();
+  const modelInput    = document.getElementById("model").value.trim().toLowerCase();
+  const area          = document.getElementById("result");
   area.innerHTML = "";
 
-  /* ✅ 完全空検索のみ防止 */
-  if (!customer && !tel && !machine && !model) {
+  /* 完全空検索のみ防止 */
+  if (!customerInput && !telInput && !machineInput && !modelInput) {
     return;
   }
 
   rows.forEach(r => {
-    const customerName = r[1] || "";
-    const telNorm      = (r[2] || "").replace(/-/g, "");
-    const modelName    = r[3] || "";
-    const machineNo    = r[4] || "";
+    const customerName = (r[1] || "");
+    const telNorm      = (r[8] || "").replace(/-/g, "");
+    const modelName    = (r[3] || "");
+    const machineNo    = (r[4] || "");
+
+    /* 大文字小文字を区別しない比較用 */
+    const modelLower   = modelName.toLowerCase();
+    const machineLower = machineNo.toLowerCase();
 
     if (
-      (!customer || customerName.includes(customer)) &&
-      (!tel      || telNorm.includes(tel)) &&
-      (!machine  || machineNo.includes(machine)) &&
-      (!model    || modelName.includes(model))
+      (!customerInput || customerName.includes(customerInput)) &&
+      (!telInput      || telNorm.includes(telInput)) &&
+      (!machineInput  || machineLower.includes(machineInput)) &&
+      (!modelInput    || modelLower.includes(modelInput))
     ) {
       area.innerHTML += `
         <div class="item">
-          受付日：${r[0]}<br>
-          客先名：${r[1]}<br>
-          電話番号：${r[2]}<br>
-          型式：${r[3]}<br>
-          機械№：${r[4]}
+          客先名：${customerName}<br>
+          電話番号：${r[8] || ""}<br>
+          機種名称：${modelName}<br>
+          機械№：${machineNo}
         </div>
       `;
     }
@@ -113,4 +129,3 @@ function search() {
 
 </body>
 </html>
-``
