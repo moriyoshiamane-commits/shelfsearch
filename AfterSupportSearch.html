@@ -23,7 +23,7 @@ button {
   padding: 6px 16px;
   font-size: 16px;
   font-weight: bold;
-  color: #ffffff;
+  color: #fff;
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
@@ -45,6 +45,12 @@ button {
 
 <h2>アフター対応検索</h2>
 
+客先名（部分一致）<br>
+<input id="customer"><br>
+
+電話番号（ハイフン無し・部分一致）<br>
+<input id="tel"><br>
+
 機械番号（部分一致）<br>
 <input id="machine"><br>
 
@@ -58,10 +64,7 @@ button {
 <script>
 let rows = [];
 
-/*
-  CSV 読み込み（現行仕様そのまま）
-*/
-fetch("AfterSupport.csv")
+fetch("MachineMaster_AfterSupport.csv")
   .then(res => res.text())
   .then(text => {
     const lines = text.replace(/\r/g, "").trim().split("\n");
@@ -70,34 +73,36 @@ fetch("AfterSupport.csv")
   });
 
 function search() {
-  const machine = document.getElementById("machine").value.trim();
-  const model   = document.getElementById("model").value.trim();
-  const area    = document.getElementById("result");
+  const customer = document.getElementById("customer").value.trim();
+  const tel      = document.getElementById("tel").value.trim();
+  const machine  = document.getElementById("machine").value.trim();
+  const model    = document.getElementById("model").value.trim();
+  const area     = document.getElementById("result");
   area.innerHTML = "";
 
-  /*
-    ✅ ①対策
-    両方とも未入力なら、処理しない
-    （= 全件ループ防止）
-  */
-  if (!machine && !model) {
+  /* ✅ 完全空検索のみ防止 */
+  if (!customer && !tel && !machine && !model) {
     return;
   }
 
   rows.forEach(r => {
-    const machineNo = r[4] || "";
-    const modelName = r[3] || "";
+    const customerName = r[1] || "";
+    const telNorm      = (r[2] || "").replace(/-/g, "");
+    const modelName    = r[3] || "";
+    const machineNo    = r[4] || "";
 
     if (
-      (!machine || machineNo.includes(machine)) &&
-      (!model   || modelName.includes(model))
+      (!customer || customerName.includes(customer)) &&
+      (!tel      || telNorm.includes(tel)) &&
+      (!machine  || machineNo.includes(machine)) &&
+      (!model    || modelName.includes(model))
     ) {
       area.innerHTML += `
         <div class="item">
           受付日：${r[0]}<br>
           客先名：${r[1]}<br>
-          内容　：${r[2]}<br>
-          型式　：${r[3]}<br>
+          電話番号：${r[2]}<br>
+          型式：${r[3]}<br>
           機械№：${r[4]}
         </div>
       `;
@@ -108,3 +113,4 @@ function search() {
 
 </body>
 </html>
+``
