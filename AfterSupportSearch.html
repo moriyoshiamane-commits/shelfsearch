@@ -15,6 +15,11 @@ input {
   width: 260px;
   padding: 6px;
   font-size: 16px;
+  margin-bottom: 2px;
+}
+.example {
+  color: #555;
+  font-size: 14px;
   margin-bottom: 6px;
 }
 button {
@@ -42,19 +47,24 @@ button {
 <h2>アフター対応検索</h2>
 
 客先名（部分一致）<br>
-<input id="customer"><br>
+<input id="customer">
+<div class="example">→（例：スター精機）</div>
 
 電話番号（ハイフン無し・部分一致）<br>
-<input id="tel"><br>
+<input id="tel">
+<div class="example">→（例：077123）</div>
 
 機種名称（部分一致・大小文字区別なし）<br>
-<input id="model"><br>
+<input id="model">
+<div class="example">→（例：GX-1100）</div>
 
 機械№（部分一致・大小文字区別なし）<br>
-<input id="machine"><br>
+<input id="machine">
+<div class="example">→（例：GX11N-）</div>
 
 BOX名（部分一致・大小文字区別なし）<br>
-<input id="box"><br>
+<input id="box">
+<div class="example">→（例：STEC-360）</div>
 
 <button type="button" onclick="search()">検索</button>
 
@@ -93,7 +103,6 @@ function search() {
 
   area.innerHTML = "";
 
-  // 完全空検索のみ防止
   if (!customerInput && !telInput && !modelInput && !machineInput && !boxInput) {
     return;
   }
@@ -129,4 +138,3 @@ function search() {
 
 </body>
 </html>
-``
