@@ -36,12 +36,12 @@
     text-align: center;
   }
 
-  td.no        { width: 40px;  text-align: center; }
-  td.code      { width: 90px;  }
-  td.name      { width: 230px; }
-  td.spec      { width: 250px; }
-  td.shelf     { width: 120px; }
-  td.qty       { width: 70px;  text-align: center; }
+  td.no    { width: 40px; text-align: center; }
+  td.code  { width: 90px; }
+  td.name  { width: 230px; }
+  td.spec  { width: 250px; }
+  td.shelf { width: 120px; }
+  td.qty   { width: 70px; text-align: center; }
 
   input.code {
     width: 80px;
@@ -55,7 +55,6 @@
 
   .ok   { background: #c8f7c5; }
   .ng   { background: #f7c5c5; }
-  .warn { background: #fff3b0; }
 
   textarea {
     width: 600px;
@@ -69,11 +68,24 @@
 <h2>アインツ 商品確認</h2>
 
 <div>
-  客先：
-  <span id="customerName">（CustomerSearchから遷移想定）</span>
+  客先№：
+  <input type="text"
+         id="customerCode"
+         style="width:120px;"
+         maxlength="8"
+         placeholder="00000-00"
+         oninput="formatCustomerCode(this)">
+  <br>
+  客先名：
+  <input type="text"
+         id="customerName"
+         style="width:320px;"
+         maxlength="40">
   <br>
   担当者名：
-  <input type="text" id="personName" style="width:200px;">
+  <input type="text"
+         id="personName"
+         style="width:200px;">
 </div>
 
 <br>
@@ -104,7 +116,7 @@
 
 <script>
 /* ===============================
-   Eins.csv 読み込み
+   Eins.csv 読み込み（UTF-8）
    =============================== */
 let einsData = [];
 
@@ -150,7 +162,7 @@ for (let i = 1; i <= 20; i++) {
 }
 
 /* ===============================
-   行ごとの即時判定
+   部品番号チェック
    =============================== */
 function checkRow(el) {
   const tr = el.closest('tr');
@@ -182,7 +194,29 @@ function checkRow(el) {
 }
 
 /* ===============================
-   AS400 コピペ生成
+   客先№ フォーマット制御
+   形式：00000-00
+   =============================== */
+function formatCustomerCode(el) {
+  let v = el.value.replace(/[^0-9-]/g, '');
+
+  const parts = v.split('-');
+  if (parts.length > 2) {
+    v = parts[0] + '-' + parts[1];
+  }
+
+  if (v.includes('-')) {
+    const [a, b] = v.split('-');
+    v = a.slice(0, 5) + '-' + b.slice(0, 2);
+  } else {
+    v = v.slice(0, 5);
+  }
+
+  el.value = v;
+}
+
+/* ===============================
+   AS400 コピペ用生成
    =============================== */
 function copyForAS400() {
   let out = '';
@@ -201,4 +235,3 @@ function copyForAS400() {
 
 </body>
 </html>
-``
