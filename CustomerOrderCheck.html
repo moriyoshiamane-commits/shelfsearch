@@ -11,7 +11,6 @@
     font-size: 13px;
   }
 
-  /* 左寄せ・固定幅 */
   .container {
     width: 1050px;
     margin-left: 10px;
@@ -117,7 +116,7 @@
 
 <script>
 /* ===============================
-   Eins.csv 読み込み（UTF-8）
+   Eins.csv 読み込み
    =============================== */
 let einsData = [];
 
@@ -128,7 +127,7 @@ fetch('Eins.csv')
     einsData = lines.map(l => {
       const c = l.split(',');
       return {
-        code:  (c[0] || '').trim().padStart(6, '0'),
+        code:  (c[0] || '').trim().padStart(6,'0'),
         name:  (c[1] || '').trim(),
         spec:  (c[2] || '').trim(),
         shelf: (c[4] || '').trim()
@@ -148,14 +147,14 @@ fetch('CustomerMaster.csv')
     customerMaster = lines.map(l => {
       const c = l.split(',');
       return {
-        code: (c[0] || '').trim(),  // 客先№ 00000-00
-        name: (c[1] || '').trim()   // 客先名
+        code: (c[0] || '').trim(),
+        name: (c[1] || '').trim()
       };
     });
   });
 
 /* ===============================
-   行生成（商品）
+   商品行生成
    =============================== */
 const tbody = document.getElementById('rows');
 
@@ -166,7 +165,8 @@ for (let i = 1; i <= 20; i++) {
     <td class="code">
       <input class="code"
              maxlength="6"
-             oninput="this.value=this.value.replace(/[^0-9]/g,'');checkRow(this)">
+             oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+             onblur="this.value=this.value.padStart(6,'0');checkRow(this)">
     </td>
     <td class="name"></td>
     <td class="spec"></td>
@@ -181,11 +181,11 @@ for (let i = 1; i <= 20; i++) {
 }
 
 /* ===============================
-   部品番号チェック
+   部品№チェック
    =============================== */
 function checkRow(el) {
   const tr = el.closest('tr');
-  const codeInput = tr.querySelector('input.code').value.trim();
+  const codeInput = el.value.trim();
 
   const nameCell  = tr.querySelector('.name');
   const specCell  = tr.querySelector('.spec');
@@ -198,8 +198,7 @@ function checkRow(el) {
 
   if (!codeInput) return;
 
-  const normCode = codeInput.padStart(6, '0');
-  const hit = einsData.find(d => d.code === normCode);
+  const hit = einsData.find(d => d.code === codeInput);
 
   if (hit) {
     tr.className = 'ok';
@@ -213,7 +212,7 @@ function checkRow(el) {
 }
 
 /* ===============================
-   客先№ 入力制御（00000-00）
+   客先№ フォーマット
    =============================== */
 function formatCustomerCode(el) {
   let v = el.value.replace(/[^0-9-]/g, '');
@@ -224,17 +223,18 @@ function formatCustomerCode(el) {
   }
 
   if (v.includes('-')) {
-    const [a, b] = v.split('-');
-    v = a.slice(0, 5) + '-' + b.slice(0, 2);
+    const a = v.split('-')[0].slice(0,5);
+    const b = v.split('-')[1].slice(0,2);
+    v = a + '-' + b;
   } else {
-    v = v.slice(0, 5);
+    v = v.slice(0,5);
   }
 
   el.value = v;
 }
 
 /* ===============================
-   Enterキーで客先名検索
+   客先№ Enter検索
    =============================== */
 function searchCustomer() {
   const code = document.getElementById('customerCode').value.trim();
@@ -243,22 +243,17 @@ function searchCustomer() {
   if (!code) return;
 
   const hit = customerMaster.find(c => c.code === code);
-
-  if (hit) {
-    nameInput.value = hit.name;
-  } else {
-    nameInput.value = '（未登録）';
-  }
+  nameInput.value = hit ? hit.name : '（未登録）';
 }
 
 /* ===============================
-   AS400 コピペ用生成
+   AS400 コピペ生成
    =============================== */
 function copyForAS400() {
   let out = '';
   [...tbody.children].forEach(tr => {
     if (tr.className === 'ok') {
-      const code = tr.querySelector('input.code').value.padStart(6, '0');
+      const code = tr.querySelector('input.code').value;
       const qty  = tr.querySelector('input.qty').value;
       if (qty) {
         out += `${code}\t${qty}\n`;
@@ -271,4 +266,3 @@ function copyForAS400() {
 
 </body>
 </html>
-``
