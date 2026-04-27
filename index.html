@@ -2,36 +2,26 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>業務検索メニュー</title>
+<title>業務検索</title>
 
 <style>
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  margin: 10px;
-  font-size: 16px;
-}
+  body {
+    font-family: sans-serif;
+  }
 
-h2 {
-  margin-bottom: 12px;
-}
-
-/* 左寄せ・幅固定 */
-.menu {
-  max-width: 280px;
-}
-
-.menu a {
-  display: block;
-  padding: 10px;
-  margin-bottom: 8px;
-  text-decoration: none;
-  color: #ffffff;
-  font-weight: bold;
-  background: linear-gradient(#4c8bf5, #356ac3);
-  border: 1px solid #2f5fb3;
-  border-radius: 6px;
-}
+  .menu-button {
+    display: block;
+    width: 280px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: linear-gradient(#5b8de3, #3f6ac7);
+    color: #ffffff;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    text-align: left;
+  }
 </style>
 </head>
 
@@ -39,12 +29,25 @@ h2 {
 
 <h2>業務検索</h2>
 
-<div class="menu">
-  <a href="CustomerSearch.html">客先検索</a>
-  <a href="AfterSupportSearch.html">アフター対応</a>
-  <a href="ShelfSearch.html">棚番検索</a>
-  <a href="YamatoSearch.html">ヤマト運輸</a>
-</div>
+<a class="menu-button" href="CustomerSearch.html">
+  客先検索
+</a>
+
+<a class="menu-button" href="CustomerOrderCheck.html">
+  アインツ 商品確認
+</a>
+
+<a class="menu-button" href="AfterSupportSearch.html">
+  アフター対応
+</a>
+
+<a class="menu-button" href="ShelfSearch.html">
+  棚番検索
+</a>
+
+<a class="menu-button" href="YamatoSearch.html">
+  ヤマト運輸
+</a>
 
 </body>
 </html>
