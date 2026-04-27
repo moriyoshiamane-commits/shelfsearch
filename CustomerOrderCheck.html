@@ -53,8 +53,8 @@
     text-align: right;
   }
 
-  .ok   { background: #c8f7c5; }
-  .ng   { background: #f7c5c5; }
+  .ok { background: #c8f7c5; }
+  .ng { background: #f7c5c5; }
 
   textarea {
     width: 600px;
@@ -74,7 +74,8 @@
          style="width:120px;"
          maxlength="8"
          placeholder="00000-00"
-         oninput="formatCustomerCode(this)">
+         oninput="formatCustomerCode(this)"
+         onkeydown="if(event.key==='Enter'){searchCustomer();}">
   <br>
   客先名：
   <input type="text"
@@ -136,7 +137,25 @@ fetch('Eins.csv')
   });
 
 /* ===============================
-   行生成
+   CustomerMaster.csv 読み込み
+   =============================== */
+let customerMaster = [];
+
+fetch('CustomerMaster.csv')
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.split('\n').slice(1);
+    customerMaster = lines.map(l => {
+      const c = l.split(',');
+      return {
+        code: (c[0] || '').trim(),  // 客先№ 00000-00
+        name: (c[1] || '').trim()   // 客先名
+      };
+    });
+  });
+
+/* ===============================
+   行生成（商品）
    =============================== */
 const tbody = document.getElementById('rows');
 
@@ -194,8 +213,7 @@ function checkRow(el) {
 }
 
 /* ===============================
-   客先№ フォーマット制御
-   形式：00000-00
+   客先№ 入力制御（00000-00）
    =============================== */
 function formatCustomerCode(el) {
   let v = el.value.replace(/[^0-9-]/g, '');
@@ -213,6 +231,24 @@ function formatCustomerCode(el) {
   }
 
   el.value = v;
+}
+
+/* ===============================
+   Enterキーで客先名検索
+   =============================== */
+function searchCustomer() {
+  const code = document.getElementById('customerCode').value.trim();
+  const nameInput = document.getElementById('customerName');
+
+  if (!code) return;
+
+  const hit = customerMaster.find(c => c.code === code);
+
+  if (hit) {
+    nameInput.value = hit.name;
+  } else {
+    nameInput.value = '（未登録）';
+  }
 }
 
 /* ===============================
@@ -235,3 +271,4 @@ function copyForAS400() {
 
 </body>
 </html>
+``
