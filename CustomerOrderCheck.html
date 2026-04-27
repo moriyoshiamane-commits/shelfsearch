@@ -21,7 +21,7 @@
   }
 
   .guide {
-    margin-bottom: 8px;
+    margin-bottom: 2px;
     color: #444;
   }
 
@@ -94,6 +94,7 @@
 </div>
 
 <p class="guide">※ 部品№入力後は Tabキーで次の項目へ進めます</p>
+<p class="guide">※ Ctrl＋P でこの画面を印刷できます（DocuWorks可）</p>
 
 <table>
 <thead>
@@ -120,11 +121,7 @@
 </div>
 
 <script>
-/* ===============================
-   Eins.csv 読み込み
-   =============================== */
 let einsData = [];
-
 fetch('Eins.csv')
   .then(res => res.text())
   .then(text => {
@@ -140,11 +137,7 @@ fetch('Eins.csv')
     });
   });
 
-/* ===============================
-   CustomerMaster.csv 読み込み
-   =============================== */
 let customerMaster = [];
-
 fetch('CustomerMaster.csv')
   .then(res => res.text())
   .then(text => {
@@ -158,11 +151,7 @@ fetch('CustomerMaster.csv')
     });
   });
 
-/* ===============================
-   商品行生成
-   =============================== */
 const tbody = document.getElementById('rows');
-
 for (let i = 1; i <= 20; i++) {
   const tr = document.createElement('tr');
   tr.innerHTML = `
@@ -185,13 +174,9 @@ for (let i = 1; i <= 20; i++) {
   tbody.appendChild(tr);
 }
 
-/* ===============================
-   部品№チェック
-   =============================== */
 function checkRow(el) {
   const tr = el.closest('tr');
   const codeInput = el.value.trim();
-
   const nameCell  = tr.querySelector('.name');
   const specCell  = tr.querySelector('.spec');
   const shelfCell = tr.querySelector('.shelf');
@@ -204,7 +189,6 @@ function checkRow(el) {
   if (!codeInput) return;
 
   const hit = einsData.find(d => d.code === codeInput);
-
   if (hit) {
     tr.className = 'ok';
     nameCell.textContent  = hit.name;
@@ -216,17 +200,10 @@ function checkRow(el) {
   }
 }
 
-/* ===============================
-   客先№ フォーマット
-   =============================== */
 function formatCustomerCode(el) {
   let v = el.value.replace(/[^0-9-]/g, '');
-
   const parts = v.split('-');
-  if (parts.length > 2) {
-    v = parts[0] + '-' + parts[1];
-  }
-
+  if (parts.length > 2) v = parts[0] + '-' + parts[1];
   if (v.includes('-')) {
     const a = v.split('-')[0].slice(0,5);
     const b = v.split('-')[1].slice(0,2);
@@ -234,35 +211,24 @@ function formatCustomerCode(el) {
   } else {
     v = v.slice(0,5);
   }
-
   el.value = v;
 }
 
-/* ===============================
-   客先№ Enter検索
-   =============================== */
 function searchCustomer() {
   const code = document.getElementById('customerCode').value.trim();
   const nameInput = document.getElementById('customerName');
-
   if (!code) return;
-
   const hit = customerMaster.find(c => c.code === code);
   nameInput.value = hit ? hit.name : '（未登録）';
 }
 
-/* ===============================
-   AS400 コピペ生成
-   =============================== */
 function copyForAS400() {
   let out = '';
   [...tbody.children].forEach(tr => {
     if (tr.className === 'ok') {
       const code = tr.querySelector('input.code').value;
       const qty  = tr.querySelector('input.qty').value;
-      if (qty) {
-        out += `${code}\t${qty}\n`;
-      }
+      if (qty) out += `${code}\t${qty}\n`;
     }
   });
   document.getElementById('output').value = out;
