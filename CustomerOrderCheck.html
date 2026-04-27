@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>アインツ 商品確認</title>
+<style>
+  body { font-family: sans-serif; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #999; padding: 4px; font-size: 14px; }
+  th { background: #eee; }
+  .ok { background: #c8f7c5; }
+  .ng { background: #f7c5c5; }
+  .warn { background: #fff3b0; }
+  input { width: 95%; }
+</style>
+</head>
+
+<body>
+<h2>アインツ 商品確認</h2>
+
+<div>
+  客先：<span id="customerName">（CustomerSearchから遷移想定）</span><br>
+  担当者名：<input type="text" id="personName" style="width:300px;">
+</div>
+<br>
+
+<table>
+<thead>
+<tr>
+  <th>No</th>
+  <th>商品コード</th>
+  <th>規格（確認用）</th>
+  <th>結果</th>
+  <th>数量</th>
+</tr>
+</thead>
+<tbody id="rows"></tbody>
+</table>
+
+<br>
+<button onclick="copyForAS400()">AS400用 コピペ作成</button>
+<br><br>
+<textarea id="output" cols="80" rows="6"></textarea>
+
+<script>
+let einsData = [];
+
+fetch('Eins.csv')
+  .then(res => res.text())
+  .then(text => {
+    const lines = text.split('\n').slice(1);
+    einsData = lines.map(l => {
+      const c = l.split(',');
+      return {
+        code: c[0]?.trim().padStart(6,'0'),
+        spec: (c[2] || '').trim(),
+        shelf: (c[4] || '').trim()
+      };
+    });
+  });
+
+const tbody = document.getElementById('rows');
+
+for (let i = 1; i <= 20; i++) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${i}</td>
+    <td><input oninput="checkRow(this)" data-row="${i}"></td>
+    <td><input oninput="checkRow(this)" data-row="${i}"></td>
+    <td class="result"></td>
+    <td><input></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function checkRow(el) {
+  const tr = el.closest('tr');
+  const codeInput = tr.children[1].querySelector('input').value.trim();
+  const specInput = tr.children[2].querySelector('input').value.trim();
+  const resultCell = tr.children[3];
+
+  tr.className = '';
+  resultCell.textContent = '';
+
+  let candidates = einsData;
+
+  if (codeInput) {
+    const norm = codeInput.padStart(6,'0');
+    candidates = candidates.filter(d => d.code === norm);
+  }
+
+  if (specInput) {
+    candidates = candidates.filter(d => d.spec.includes(specInput));
+  }
+
+  if (candidates.length === 1) {
+    tr.className = 'ok';
+    resultCell.textContent = `棚番：${candidates[0].shelf}`;
+  } else if (candidates.length > 1) {
+    tr.className = 'warn';
+    resultCell.textContent = `候補 ${candidates.length} 件`;
+  } else {
+    tr.className = 'ng';
+    resultCell.textContent = '該当なし';
+  }
+}
+
+function copyForAS400() {
+  let out = '';
+  [...tbody.children].forEach(tr => {
+    if (tr.className === 'ok') {
+      const code = tr.children[1].querySelector('input').value.padStart(6,'0');
+      const qty = tr.children[4].querySelector('input').value;
+      if (qty) out += `${code}\t${qty}\n`;
+    }
+  });
+  document.getElementById('output').value = out;
+}
+</script>
+
+</body>
+</html>
