@@ -11,13 +11,14 @@
     font-size: 13px;
   }
 
+  /* 左寄せ・固定幅 */
   .container {
     width: 1050px;
-    margin: 0 auto;
+    margin-left: 10px;
   }
 
   h2 {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   table {
@@ -35,35 +36,16 @@
     text-align: center;
   }
 
-  td.no {
-    width: 40px;
-    text-align: center;
-  }
-
-  td.code {
-    width: 130px;
-  }
-
-  td.spec {
-    width: 320px;
-  }
-
-  td.result {
-    width: 200px;
-  }
-
-  td.qty {
-    width: 70px;
-    text-align: center;
-  }
+  td.no        { width: 40px;  text-align: center; }
+  td.code      { width: 90px;  }
+  td.name      { width: 230px; }
+  td.spec      { width: 250px; }
+  td.shelf     { width: 120px; }
+  td.qty       { width: 70px;  text-align: center; }
 
   input.code {
-    width: 110px;
+    width: 80px;
     text-align: right;
-  }
-
-  input.spec {
-    width: 300px;
   }
 
   input.qty {
@@ -101,8 +83,9 @@
 <tr>
   <th>No</th>
   <th>部品№</th>
-  <th>規格（確認用）</th>
-  <th>結果</th>
+  <th>品名</th>
+  <th>規格</th>
+  <th>棚番</th>
   <th>数量</th>
 </tr>
 </thead>
@@ -120,7 +103,9 @@
 </div>
 
 <script>
-/* === Eins.csv 読み込み === */
+/* ===============================
+   Eins.csv 読み込み
+   =============================== */
 let einsData = [];
 
 fetch('Eins.csv')
@@ -130,14 +115,17 @@ fetch('Eins.csv')
     einsData = lines.map(l => {
       const c = l.split(',');
       return {
-        code: (c[0] || '').trim().padStart(6, '0'),
-        spec: (c[2] || '').trim(),
+        code:  (c[0] || '').trim().padStart(6, '0'),
+        name:  (c[1] || '').trim(),
+        spec:  (c[2] || '').trim(),
         shelf: (c[4] || '').trim()
       };
     });
   });
 
-/* === 行生成 === */
+/* ===============================
+   行生成
+   =============================== */
 const tbody = document.getElementById('rows');
 
 for (let i = 1; i <= 20; i++) {
@@ -149,12 +137,9 @@ for (let i = 1; i <= 20; i++) {
              maxlength="6"
              oninput="this.value=this.value.replace(/[^0-9]/g,'');checkRow(this)">
     </td>
-    <td class="spec">
-      <input class="spec"
-             maxlength="25"
-             oninput="checkRow(this)">
-    </td>
-    <td class="result"></td>
+    <td class="name"></td>
+    <td class="spec"></td>
+    <td class="shelf"></td>
     <td class="qty">
       <input class="qty"
              maxlength="3"
@@ -164,46 +149,47 @@ for (let i = 1; i <= 20; i++) {
   tbody.appendChild(tr);
 }
 
-/* === 行ごとの即時判定 === */
+/* ===============================
+   行ごとの即時判定
+   =============================== */
 function checkRow(el) {
   const tr = el.closest('tr');
   const codeInput = tr.querySelector('input.code').value.trim();
-  const specInput = tr.querySelector('input.spec').value.trim();
-  const resultCell = tr.querySelector('.result');
+
+  const nameCell  = tr.querySelector('.name');
+  const specCell  = tr.querySelector('.spec');
+  const shelfCell = tr.querySelector('.shelf');
 
   tr.className = '';
-  resultCell.textContent = '';
+  nameCell.textContent  = '';
+  specCell.textContent  = '';
+  shelfCell.textContent = '';
 
-  let candidates = einsData;
+  if (!codeInput) return;
 
-  if (codeInput) {
-    const normCode = codeInput.padStart(6, '0');
-    candidates = candidates.filter(d => d.code === normCode);
-  }
+  const normCode = codeInput.padStart(6, '0');
+  const hit = einsData.find(d => d.code === normCode);
 
-  if (specInput) {
-    candidates = candidates.filter(d => d.spec.includes(specInput));
-  }
-
-  if (candidates.length === 1) {
+  if (hit) {
     tr.className = 'ok';
-    resultCell.textContent = `棚番：${candidates[0].shelf}`;
-  } else if (candidates.length > 1) {
-    tr.className = 'warn';
-    resultCell.textContent = `候補 ${candidates.length} 件`;
-  } else if (codeInput || specInput) {
+    nameCell.textContent  = hit.name;
+    specCell.textContent  = hit.spec;
+    shelfCell.textContent = hit.shelf;
+  } else {
     tr.className = 'ng';
-    resultCell.textContent = '該当なし';
+    shelfCell.textContent = '該当なし';
   }
 }
 
-/* === AS400 コピペ用生成 === */
+/* ===============================
+   AS400 コピペ生成
+   =============================== */
 function copyForAS400() {
   let out = '';
   [...tbody.children].forEach(tr => {
     if (tr.className === 'ok') {
       const code = tr.querySelector('input.code').value.padStart(6, '0');
-      const qty = tr.querySelector('input.qty').value;
+      const qty  = tr.querySelector('input.qty').value;
       if (qty) {
         out += `${code}\t${qty}\n`;
       }
@@ -215,3 +201,4 @@ function copyForAS400() {
 
 </body>
 </html>
+``
