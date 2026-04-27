@@ -3,32 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <title>アインツ 商品確認</title>
+
 <style>
-  body { font-family: sans-serif; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #999; padding: 4px; font-size: 14px; }
-  th { background: #eee; }
-  .ok { background: #c8f7c5; }
-  .ng { background: #f7c5c5; }
+  body {
+    font-family: sans-serif;
+    background: #ffffff;
+    font-size: 13px;
+  }
+
+  .container {
+    width: 1050px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    margin-bottom: 10px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #999;
+    padding: 3px;
+  }
+
+  th {
+    background: #eeeeee;
+    text-align: center;
+  }
+
+  td.no {
+    width: 40px;
+    text-align: center;
+  }
+
+  td.code {
+    width: 130px;
+  }
+
+  td.spec {
+    width: 320px;
+  }
+
+  td.result {
+    width: 200px;
+  }
+
+  td.qty {
+    width: 70px;
+    text-align: center;
+  }
+
+  input.code {
+    width: 110px;
+    text-align: right;
+  }
+
+  input.spec {
+    width: 300px;
+  }
+
+  input.qty {
+    width: 50px;
+    text-align: right;
+  }
+
+  .ok   { background: #c8f7c5; }
+  .ng   { background: #f7c5c5; }
   .warn { background: #fff3b0; }
-  input { width: 95%; }
+
+  textarea {
+    width: 600px;
+  }
 </style>
 </head>
 
 <body>
+<div class="container">
+
 <h2>アインツ 商品確認</h2>
 
 <div>
-  客先：<span id="customerName">（CustomerSearchから遷移想定）</span><br>
-  担当者名：<input type="text" id="personName" style="width:300px;">
+  客先：
+  <span id="customerName">（CustomerSearchから遷移想定）</span>
+  <br>
+  担当者名：
+  <input type="text" id="personName" style="width:200px;">
 </div>
+
 <br>
 
 <table>
 <thead>
 <tr>
   <th>No</th>
-  <th>商品コード</th>
+  <th>部品№</th>
   <th>規格（確認用）</th>
   <th>結果</th>
   <th>数量</th>
@@ -38,11 +110,17 @@
 </table>
 
 <br>
+
 <button onclick="copyForAS400()">AS400用 コピペ作成</button>
+
 <br><br>
-<textarea id="output" cols="80" rows="6"></textarea>
+
+<textarea id="output" rows="6"></textarea>
+
+</div>
 
 <script>
+/* === Eins.csv 読み込み === */
 let einsData = [];
 
 fetch('Eins.csv')
@@ -52,32 +130,46 @@ fetch('Eins.csv')
     einsData = lines.map(l => {
       const c = l.split(',');
       return {
-        code: c[0]?.trim().padStart(6,'0'),
+        code: (c[0] || '').trim().padStart(6, '0'),
         spec: (c[2] || '').trim(),
         shelf: (c[4] || '').trim()
       };
     });
   });
 
+/* === 行生成 === */
 const tbody = document.getElementById('rows');
 
 for (let i = 1; i <= 20; i++) {
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td>${i}</td>
-    <td><input oninput="checkRow(this)" data-row="${i}"></td>
-    <td><input oninput="checkRow(this)" data-row="${i}"></td>
+    <td class="no">${i}</td>
+    <td class="code">
+      <input class="code"
+             maxlength="6"
+             oninput="this.value=this.value.replace(/[^0-9]/g,'');checkRow(this)">
+    </td>
+    <td class="spec">
+      <input class="spec"
+             maxlength="25"
+             oninput="checkRow(this)">
+    </td>
     <td class="result"></td>
-    <td><input></td>
+    <td class="qty">
+      <input class="qty"
+             maxlength="3"
+             oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </td>
   `;
   tbody.appendChild(tr);
 }
 
+/* === 行ごとの即時判定 === */
 function checkRow(el) {
   const tr = el.closest('tr');
-  const codeInput = tr.children[1].querySelector('input').value.trim();
-  const specInput = tr.children[2].querySelector('input').value.trim();
-  const resultCell = tr.children[3];
+  const codeInput = tr.querySelector('input.code').value.trim();
+  const specInput = tr.querySelector('input.spec').value.trim();
+  const resultCell = tr.querySelector('.result');
 
   tr.className = '';
   resultCell.textContent = '';
@@ -85,8 +177,8 @@ function checkRow(el) {
   let candidates = einsData;
 
   if (codeInput) {
-    const norm = codeInput.padStart(6,'0');
-    candidates = candidates.filter(d => d.code === norm);
+    const normCode = codeInput.padStart(6, '0');
+    candidates = candidates.filter(d => d.code === normCode);
   }
 
   if (specInput) {
@@ -99,19 +191,22 @@ function checkRow(el) {
   } else if (candidates.length > 1) {
     tr.className = 'warn';
     resultCell.textContent = `候補 ${candidates.length} 件`;
-  } else {
+  } else if (codeInput || specInput) {
     tr.className = 'ng';
     resultCell.textContent = '該当なし';
   }
 }
 
+/* === AS400 コピペ用生成 === */
 function copyForAS400() {
   let out = '';
   [...tbody.children].forEach(tr => {
     if (tr.className === 'ok') {
-      const code = tr.children[1].querySelector('input').value.padStart(6,'0');
-      const qty = tr.children[4].querySelector('input').value;
-      if (qty) out += `${code}\t${qty}\n`;
+      const code = tr.querySelector('input.code').value.padStart(6, '0');
+      const qty = tr.querySelector('input.qty').value;
+      if (qty) {
+        out += `${code}\t${qty}\n`;
+      }
     }
   });
   document.getElementById('output').value = out;
