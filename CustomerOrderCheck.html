@@ -11,12 +11,35 @@ body {
   background: #fff;
 }
 
+/* ===== レイアウト ===== */
 .container {
-  width: 1050px;
+  display: flex;
+  width: 1400px;   /* PC前提 */
   margin-left: 10px;
 }
 
-h2 { margin-bottom: 4px; }
+.main {
+  width: 1050px;
+}
+
+.side {
+  width: 330px;
+  margin-left: 10px;
+  padding-left: 10px;
+  border-left: 1px solid #999;
+  background: #fafafa;
+}
+
+.side h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+/* ===== 共通スタイル ===== */
+h2 {
+  margin-bottom: 4px;
+}
 
 .guide {
   margin: 2px 0;
@@ -34,58 +57,74 @@ th, td {
 }
 
 th {
-  background: #eee;
+  background: #eeeeee;
   text-align: center;
 }
 
-td.no    { width: 40px; text-align: center; }
+td.no    { width: 40px;  text-align: center; }
 td.code  { width: 90px; }
 td.name  { width: 230px; }
 td.spec  { width: 250px; }
 td.shelf { width: 120px; }
 td.qty   { width: 70px; text-align: center; }
 
-input.code { width: 80px; text-align: right; }
-input.qty  { width: 50px; text-align: right; }
+input.code {
+  width: 80px;
+  text-align: right;
+}
+
+input.qty {
+  width: 50px;
+  text-align: right;
+}
 
 .ok { background: #c8f7c5; }
 .ng { background: #f7c5c5; }
 
-textarea { width: 600px; }
+textarea {
+  width: 600px;
+}
 
+/* ===== 規格検索 ===== */
 .resultBox {
   border: 1px solid #999;
-  margin-top: 6px;
   padding: 4px;
-  max-height: 180px;
+  max-height: 420px;   /* 画面内に収める */
   overflow-y: auto;
-  background: #fafafa;
-  font-size: 12px;
+  background: #fff;
 }
 
 .resultBox div {
-  padding: 2px 0;
+  padding: 3px 0;
+  border-bottom: 1px dotted #ccc;
+  font-size: 12px;
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
+
+<!-- =======================
+     メイン（左）
+======================= -->
+<div class="main">
 
 <h2>アインツ 商品確認</h2>
 
 <div>
-客先№：
-<input type="text" id="customerCode" maxlength="8" style="width:120px;"
-       placeholder="00000-00"
-       oninput="formatCustomerCode(this)"
-       onkeydown="if(event.key==='Enter'){searchCustomer();}">
-<br>
-客先名：
-<input type="text" id="customerName" maxlength="40" style="width:320px;">
-<br>
-担当者名：
-<input type="text" id="personName" style="width:200px;">
+  客先№：
+  <input type="text" id="customerCode" maxlength="8" style="width:120px;"
+         placeholder="00000-00"
+         oninput="formatCustomerCode(this)"
+         onkeydown="if(event.key==='Enter'){searchCustomer();}">
+  <br>
+  客先名：
+  <input type="text" id="customerName" maxlength="40" style="width:320px;">
+  <br>
+  担当者名：
+  <input type="text" id="personName" style="width:200px;">
 </div>
 
 <p class="guide">※ 部品№入力後は Tabキーで次の項目へ進めます</p>
@@ -94,12 +133,12 @@ textarea { width: 600px; }
 <table>
 <thead>
 <tr>
-<th>No</th>
-<th>部品№</th>
-<th>品名</th>
-<th>規格</th>
-<th>棚番</th>
-<th>数量</th>
+  <th>No</th>
+  <th>部品№</th>
+  <th>品名</th>
+  <th>規格</th>
+  <th>棚番</th>
+  <th>数量</th>
 </tr>
 </thead>
 <tbody id="rows"></tbody>
@@ -111,14 +150,23 @@ textarea { width: 600px; }
 <br><br>
 <textarea id="output" rows="6"></textarea>
 
-<hr>
+</div>
 
-<h3>部品№が不明な場合（規格検索）</h3>
-規格／品名：
-<input type="text" id="specSearch" style="width:320px;">
+<!-- =======================
+     規格検索（右）
+======================= -->
+<div class="side">
+
+<h3>規格検索（部品№が不明な場合）</h3>
+<p class="guide">※ 規格／品名を部分入力してください</p>
+
+規格・品名：<br>
+<input type="text" id="specSearch" style="width:95%;">
 <button onclick="searchBySpec()">検索</button>
 
 <div id="specResults" class="resultBox"></div>
+
+</div>
 
 </div>
 
@@ -145,36 +193,41 @@ fetch('CustomerMaster.csv').then(r=>r.text()).then(t=>{
   const lines=t.split('\n').slice(1);
   customerMaster=lines.map(l=>{
     const c=l.split(',');
-    return {code:(c[0]||'').trim(),name:(c[1]||'').trim()};
+    return {
+      code:(c[0]||'').trim(),
+      name:(c[1]||'').trim()
+    };
   });
 });
 
-/* ===== 行生成 ===== */
+/* ===== 商品行生成 ===== */
 const tbody=document.getElementById('rows');
 for(let i=1;i<=20;i++){
   const tr=document.createElement('tr');
   tr.innerHTML=`
-  <td class="no">${i}</td>
-  <td class="code">
-    <input class="code" maxlength="6"
-      oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-      onblur="this.value=this.value.padStart(6,'0');checkRow(this)">
-  </td>
-  <td class="name"></td>
-  <td class="spec"></td>
-  <td class="shelf"></td>
-  <td class="qty">
-    <input class="qty" maxlength="3"
-      oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-  </td>`;
+    <td class="no">${i}</td>
+    <td class="code">
+      <input class="code" maxlength="6"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+        onblur="this.value=this.value.padStart(6,'0');checkRow(this)">
+    </td>
+    <td class="name"></td>
+    <td class="spec"></td>
+    <td class="shelf"></td>
+    <td class="qty">
+      <input class="qty" maxlength="3"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </td>`;
   tbody.appendChild(tr);
 }
 
-/* ===== 部品№判定 ===== */
+/* ===== 部品№チェック ===== */
 function checkRow(el){
   const tr=el.closest('tr');
   const hit=einsData.find(d=>d.code===el.value);
-  ['name','spec','shelf'].forEach(c=>tr.querySelector('.'+c).textContent='');
+  ['name','spec','shelf'].forEach(c=>{
+    tr.querySelector('.'+c).textContent='';
+  });
   tr.className='';
   if(!el.value) return;
   if(hit){
@@ -194,16 +247,19 @@ function searchBySpec(){
   const box=document.getElementById('specResults');
   box.innerHTML='';
   if(!key) return;
+
   einsData.filter(d=>d.spec.includes(key)||d.name.includes(key))
-  .forEach(d=>{
-    const div=document.createElement('div');
-    div.innerHTML=`${d.code} ${d.name}（${d.spec}）
-    <button onclick="setPartNo('${d.code}')">使う</button>`;
-    box.appendChild(div);
-  });
+    .forEach(d=>{
+      const div=document.createElement('div');
+      div.innerHTML=
+        `${d.code} ${d.name}（${d.spec}）<br>
+         棚番：${d.shelf}
+         <button onclick="setPartNo('${d.code}')">使う</button>`;
+      box.appendChild(div);
+    });
 }
 
-/* ===== 部品№セット ===== */
+/* ===== 部品№自動セット ===== */
 function setPartNo(code){
   const inputs=document.querySelectorAll('input.code');
   for(const i of inputs){
@@ -215,24 +271,27 @@ function setPartNo(code){
   }
 }
 
-/* ===== 客先検索 ===== */
+/* ===== 客先処理 ===== */
 function formatCustomerCode(el){
   let v=el.value.replace(/[^0-9-]/g,'');
   if(v.includes('-')){
     const a=v.split('-')[0].slice(0,5);
     const b=v.split('-')[1].slice(0,2);
     v=a+'-'+b;
-  }else v=v.slice(0,5);
+  }else{
+    v=v.slice(0,5);
+  }
   el.value=v;
 }
 
 function searchCustomer(){
   const code=document.getElementById('customerCode').value.trim();
   const hit=customerMaster.find(c=>c.code===code);
-  document.getElementById('customerName').value=hit?hit.name:'（未登録）';
+  document.getElementById('customerName').value=
+    hit?hit.name:'（未登録）';
 }
 
-/* ===== AS400 ===== */
+/* ===== AS400用 ===== */
 function copyForAS400(){
   let out='';
   [...tbody.children].forEach(tr=>{
@@ -245,5 +304,6 @@ function copyForAS400(){
   document.getElementById('output').value=out;
 }
 </script>
+
 </body>
 </html>
