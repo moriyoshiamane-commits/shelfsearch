@@ -91,6 +91,14 @@ input[type="button"] {
 <script>
 let customerMaster = [];
 
+/* ===== CustomerMaster.csv 読み込み =====
+   実際の列順：
+   0:客先№
+   1:客先名
+   2:TEL
+   3:FAX
+   4:地区
+====================================== */
 fetch('CustomerMaster.csv')
   .then(res => res.text())
   .then(text => {
@@ -100,9 +108,9 @@ fetch('CustomerMaster.csv')
       return {
         code: (c[0] || '').trim(),
         name: (c[1] || '').trim(),
-        area: (c[2] || '').trim(),
-        tel:  (c[3] || '').trim(),
-        fax:  (c[4] || '').trim()
+        tel:  (c[2] || '').trim(),
+        fax:  (c[3] || '').trim(),
+        area: (c[4] || '').trim()
       };
     });
   });
@@ -121,7 +129,7 @@ function searchCustomer() {
     const fax = c.fax.replace(/-/g,'');
     return (
       (!nameKey || c.name.toLowerCase().includes(nameKey)) &&
-      (!areaKey || c.area.trim().toLowerCase().includes(areaKey)) &&
+      (!areaKey || c.area.toLowerCase().includes(areaKey)) &&
       (!telKey  || tel.includes(telKey)) &&
       (!faxKey  || fax.includes(faxKey))
     );
