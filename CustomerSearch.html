@@ -7,41 +7,37 @@
 
 <style>
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16px;
-  margin: 10px;
+  font-family: sans-serif;
+  font-size: 13px;
+  background: #fff;
 }
 
-/* 入力欄 */
-input {
-  width: 260px;
-  padding: 6px;
-  font-size: 16px;
+h2 {
   margin-bottom: 6px;
 }
 
-/* 検索ボタン（棚番検索と同系色） */
-button {
-  padding: 6px 16px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #ffffff;
-  background: linear-gradient(#4c8bf5, #356ac3);
-  border: 1px solid #2f5fb3;
-  border-radius: 6px;
-  cursor: pointer;
+.search-box {
+  margin-bottom: 10px;
 }
 
-/* 検索結果 */
+label {
+  display: inline-block;
+  width: 60px;
+}
+
+input[type="text"] {
+  width: 200px;
+}
+
 .result {
-  border-top: 1px solid #ccc;
-  margin-top: 12px;
-  padding-top: 8px;
+  margin-top: 10px;
+  border-top: 1px solid #999;
+  padding-top: 6px;
 }
 
-.item {
-  border-bottom: 1px solid #ccc;
-  padding: 8px 0;
+.result div {
+  padding: 4px 0;
+  border-bottom: 1px dotted #ccc;
 }
 </style>
 </head>
@@ -50,75 +46,57 @@ button {
 
 <h2>客先検索</h2>
 
-電話番号（ハイフン無し）<br>
-<input id="tel"><br>
+<div class="search-box">
+  <label>客先名</label>
+  <input type="text" id="nameSearch">
+</div>
 
-FAX番号（ハイフン無し）<br>
-<input id="fax"><br>
+<div class="search-box">
+  <label>地区</label>
+  <input type="text" id="areaSearch" placeholder="例：奈良">
+</div>
 
-客先名（部分一致）<br>
-<input id="name"><br>
-
-<button type="button" onclick="search()">検索</button>
+<button onclick="searchCustomer()">検索</button>
 
 <div id="result" class="result"></div>
 
 <script>
-/*
-  CustomerMaster.csv 前提
-  列順：
-  [0] 客先コード
-  [1] 会社名
-  [2] TEL
-  [3] FAX
-  [4] 県（地区名）
-  [5]～
-*/
+let customerMaster = [];
 
-let rows = [];
-
-/* CSV読み込み（今朝動いていた方式に完全固定） */
-fetch("CustomerMaster.csv")
+/* ===== CustomerMaster.csv 読み込み ===== */
+fetch('CustomerMaster.csv')
   .then(res => res.text())
   .then(text => {
-    // 改行差異対応
-    const lines = text.replace(/\r/g, "").trim().split("\n");
-    lines.shift(); // ヘッダ行削除
-    rows = lines.map(line => line.split(","));
+    const lines = text.split('\n').slice(1);
+    customerMaster = lines.map(l => {
+      const c = l.split(',');
+      return {
+        code: (c[0] || '').trim(),
+        name: (c[1] || '').trim(),
+        area: (c[2] || '').trim()
+      };
+    });
   });
 
-function search() {
-  const tel = document.getElementById("tel").value.trim();
-  const fax = document.getElementById("fax").value.trim();
-  const name = document.getElementById("name").value.trim();
-  const area = document.getElementById("result");
-  area.innerHTML = "";
+/* ===== 検索処理（地区入力対応） ===== */
+function searchCustomer() {
+  const nameKey = document.getElementById('nameSearch').value.trim().toLowerCase();
+  const areaKey = document.getElementById('areaSearch').value.trim().toLowerCase();
+  const result = document.getElementById('result');
+  result.innerHTML = '';
 
-  rows.forEach(r => {
-    // 安全に正規化（空欄対策）
-    const telNorm = (r[2] || "").replace(/-/g, "");
-    const faxNorm = (r[3] || "").replace(/-/g, "");
-    const company = (r[1] || "");
-
-    if (
-      (!tel || telNorm.includes(tel)) &&
-      (!fax || faxNorm.includes(fax)) &&
-      (!name || company.includes(name))
-    ) {
-      area.innerHTML += `
-        <div class="item">
-          客先№：${r[0]}<br>
-          会社名：${r[1]}<br>
-          TEL：${r[2]}<br>
-          FAX：${r[3]}<br>
-          県：${r[4]}
-        </div>
-      `;
-    }
-  });
+  customerMaster
+    .filter(c =>
+      (!nameKey || c.name.toLowerCase().includes(nameKey)) &&
+      (!areaKey || c.area.toLowerCase().includes(areaKey))
+    )
+    .forEach(c => {
+      const div = document.createElement('div');
+      div.textContent = `${c.code} ${c.name}（${c.area}）`;
+      result.appendChild(div);
+    });
 }
 </script>
 
 </body>
 </html>
-``
