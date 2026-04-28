@@ -2,16 +2,22 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+
+<!-- ★ スマホ全面表示のために追加 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>業務検索</title>
 
 <style>
   body {
     font-family: sans-serif;
+    margin: 10px;
   }
 
   .menu-button {
     display: block;
-    width: 280px;
+    width: 100%;
+    max-width: 360px;   /* PCでも広がり過ぎない */
     padding: 12px;
     margin-bottom: 12px;
     background: linear-gradient(#5b8de3, #3f6ac7);
@@ -20,7 +26,6 @@
     text-decoration: none;
     border-radius: 6px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    text-align: left;
   }
 </style>
 </head>
@@ -29,25 +34,18 @@
 
 <h2>業務検索</h2>
 
-<a class="menu-button" href="CustomerSearch.html">
-  客先検索
-</a>
+<a href="CustomerSearch.html" class="menu-button">客先検索</a>
 
-<a class="menu-button" href="CustomerOrderCheck.html">
+<a href="CustomerOrderCheck.html" class="menu-button">
   アインツ 商品確認
 </a>
 
-<a class="menu-button" href="AfterSupportSearch.html">
-  アフター対応
-</a>
+<a href="AfterSupportSearch.html" class="menu-button">アフター対応</a>
 
-<a class="menu-button" href="ShelfSearch.html">
-  棚番検索
-</a>
+<a href="ShelfSearch.html" class="menu-button">棚番検索</a>
 
-<a class="menu-button" href="YamatoSearch.html">
-  ヤマト運輸
-</a>
+<a href="YamatoSearch.html" class="menu-button">ヤマト運輸</a>
 
 </body>
 </html>
+``
