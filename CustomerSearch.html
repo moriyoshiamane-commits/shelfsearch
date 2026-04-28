@@ -10,23 +10,29 @@ body {
   font-family: sans-serif;
   font-size: 13px;
   background: #fff;
+  margin: 10px;
 }
 
 h2 {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .search-box {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 label {
   display: inline-block;
-  width: 60px;
+  width: 70px;
 }
 
 input[type="text"] {
-  width: 200px;
+  width: 220px;
+}
+
+input[type="button"] {
+  margin-top: 10px;
+  padding: 4px 14px;
 }
 
 .result {
@@ -52,18 +58,31 @@ input[type="text"] {
 </div>
 
 <div class="search-box">
+  <label>TEL</label>
+  <input type="text" id="telSearch">
+</div>
+
+<div class="search-box">
+  <label>FAX</label>
+  <input type="text" id="faxSearch">
+</div>
+
+<div class="search-box">
   <label>地区</label>
   <input type="text" id="areaSearch" placeholder="例：奈良">
 </div>
 
-<button onclick="searchCustomer()">検索</button>
+<input type="button" value="検索" onclick="searchCustomer()">
 
 <div id="result" class="result"></div>
 
 <script>
 let customerMaster = [];
 
-/* ===== CustomerMaster.csv 読み込み ===== */
+/* ===== CustomerMaster.csv 読み込み =====
+   想定列：
+   0:客先№ 1:客先名 2:地区 3:TEL 4:FAX ...
+====================================== */
 fetch('CustomerMaster.csv')
   .then(res => res.text())
   .then(text => {
@@ -73,26 +92,33 @@ fetch('CustomerMaster.csv')
       return {
         code: (c[0] || '').trim(),
         name: (c[1] || '').trim(),
-        area: (c[2] || '').trim()
+        area: (c[2] || '').trim(),
+        tel:  (c[3] || '').trim(),
+        fax:  (c[4] || '').trim()
       };
     });
   });
 
-/* ===== 検索処理（地区入力対応） ===== */
+/* ===== 検索処理 ===== */
 function searchCustomer() {
   const nameKey = document.getElementById('nameSearch').value.trim().toLowerCase();
   const areaKey = document.getElementById('areaSearch').value.trim().toLowerCase();
-  const result = document.getElementById('result');
+  const telKey  = document.getElementById('telSearch').value.trim();
+  const faxKey  = document.getElementById('faxSearch').value.trim();
+  const result  = document.getElementById('result');
   result.innerHTML = '';
 
   customerMaster
     .filter(c =>
       (!nameKey || c.name.toLowerCase().includes(nameKey)) &&
-      (!areaKey || c.area.toLowerCase().includes(areaKey))
+      (!areaKey || c.area.toLowerCase().includes(areaKey)) &&
+      (!telKey  || c.tel.includes(telKey)) &&
+      (!faxKey  || c.fax.includes(faxKey))
     )
     .forEach(c => {
       const div = document.createElement('div');
-      div.textContent = `${c.code} ${c.name}（${c.area}）`;
+      div.textContent =
+        `${c.code} ${c.name}（${c.area}） TEL:${c.tel} FAX:${c.fax}`;
       result.appendChild(div);
     });
 }
