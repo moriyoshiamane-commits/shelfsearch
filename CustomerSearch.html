@@ -9,7 +9,6 @@
 body {
   font-family: sans-serif;
   font-size: 14px;
-  background: #fff;
   margin: 10px;
 }
 
@@ -17,7 +16,6 @@ h2 {
   margin-bottom: 12px;
 }
 
-/* ===== 入力欄レイアウト ===== */
 .search-box {
   margin-bottom: 12px;
 }
@@ -27,7 +25,6 @@ label {
   margin-bottom: 4px;
 }
 
-/* 入力フィールド（After対応検索と同等） */
 input[type="text"] {
   width: 320px;
   height: 32px;
@@ -36,7 +33,6 @@ input[type="text"] {
   box-sizing: border-box;
 }
 
-/* 検索ボタン（青） */
 input[type="button"] {
   margin-top: 14px;
   padding: 8px 18px;
@@ -45,20 +41,21 @@ input[type="button"] {
   background: linear-gradient(#5b8de3, #3f6ac7);
   border: none;
   border-radius: 6px;
-  cursor: pointer;
   box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  cursor: pointer;
 }
 
-/* 結果表示 */
 .result {
   margin-top: 16px;
-  border-top: 1px solid #999;
-  padding-top: 8px;
 }
 
-.result div {
-  padding: 6px 0;
+.card {
   border-bottom: 1px dotted #ccc;
+  padding: 8px 0;
+}
+
+.card div {
+  margin: 2px 0;
 }
 </style>
 </head>
@@ -73,12 +70,12 @@ input[type="button"] {
 </div>
 
 <div class="search-box">
-  <label>TEL</label>
+  <label>TEL（ハイフン無・部分一致）</label>
   <input type="text" id="telSearch">
 </div>
 
 <div class="search-box">
-  <label>FAX</label>
+  <label>FAX（ハイフン無・部分一致）</label>
   <input type="text" id="faxSearch">
 </div>
 
@@ -94,10 +91,6 @@ input[type="button"] {
 <script>
 let customerMaster = [];
 
-/* ===== CustomerMaster.csv 読み込み =====
-   想定列：
-   0:客先№ 1:客先名 2:地区 3:TEL 4:FAX
-====================================== */
 fetch('CustomerMaster.csv')
   .then(res => res.text())
   .then(text => {
@@ -114,28 +107,35 @@ fetch('CustomerMaster.csv')
     });
   });
 
-/* ===== 検索処理 ===== */
 function searchCustomer() {
   const nameKey = document.getElementById('nameSearch').value.trim().toLowerCase();
   const areaKey = document.getElementById('areaSearch').value.trim().toLowerCase();
-  const telKey  = document.getElementById('telSearch').value.trim();
-  const faxKey  = document.getElementById('faxSearch').value.trim();
-  const result  = document.getElementById('result');
+  const telKey  = document.getElementById('telSearch').value.trim().replace(/-/g,'');
+  const faxKey  = document.getElementById('faxSearch').value.trim().replace(/-/g,'');
+
+  const result = document.getElementById('result');
   result.innerHTML = '';
 
-  customerMaster
-    .filter(c =>
+  customerMaster.filter(c => {
+    const tel = c.tel.replace(/-/g,'');
+    const fax = c.fax.replace(/-/g,'');
+    return (
       (!nameKey || c.name.toLowerCase().includes(nameKey)) &&
-      (!areaKey || c.area.toLowerCase().includes(areaKey)) &&
-      (!telKey  || c.tel.includes(telKey)) &&
-      (!faxKey  || c.fax.includes(faxKey))
-    )
-    .forEach(c => {
-      const div = document.createElement('div');
-      div.textContent =
-        `${c.code} ${c.name}（${c.area}） TEL:${c.tel} FAX:${c.fax}`;
-      result.appendChild(div);
-    });
+      (!areaKey || c.area.trim().toLowerCase().includes(areaKey)) &&
+      (!telKey  || tel.includes(telKey)) &&
+      (!faxKey  || fax.includes(faxKey))
+    );
+  }).forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div><strong>${c.code}　${c.name}</strong></div>
+      <div>地区：${c.area}</div>
+      <div>TEL：${c.tel}</div>
+      <div>FAX：${c.fax}</div>
+    `;
+    result.appendChild(card);
+  });
 }
 </script>
 
