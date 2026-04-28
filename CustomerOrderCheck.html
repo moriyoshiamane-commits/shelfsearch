@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>アインツ 商品確認</title>
 
 <style>
@@ -14,7 +15,7 @@ body {
 /* ===== レイアウト ===== */
 .container {
   display: flex;
-  width: 1400px;   /* PC前提 */
+  width: 1400px;
   margin-left: 10px;
 }
 
@@ -30,16 +31,8 @@ body {
   background: #fafafa;
 }
 
-.side h3 {
-  margin-top: 0;
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-/* ===== 共通スタイル ===== */
-h2 {
-  margin-bottom: 4px;
-}
+/* ===== 共通 ===== */
+h2 { margin-bottom: 4px; }
 
 .guide {
   margin: 2px 0;
@@ -57,16 +50,16 @@ th, td {
 }
 
 th {
-  background: #eeeeee;
+  background: #eee;
   text-align: center;
 }
 
-td.no    { width: 40px;  text-align: center; }
-td.code  { width: 90px; }
-td.name  { width: 230px; }
-td.spec  { width: 250px; }
+td.no { width: 40px; text-align: center; }
+td.code { width: 90px; }
+td.name { width: 230px; }
+td.spec { width: 250px; }
 td.shelf { width: 120px; }
-td.qty   { width: 70px; text-align: center; }
+td.qty { width: 70px; text-align: center; }
 
 input.code {
   width: 80px;
@@ -81,15 +74,11 @@ input.qty {
 .ok { background: #c8f7c5; }
 .ng { background: #f7c5c5; }
 
-textarea {
-  width: 600px;
-}
-
 /* ===== 規格検索 ===== */
 .resultBox {
   border: 1px solid #999;
   padding: 4px;
-  max-height: 420px;   /* 画面内に収める */
+  max-height: 420px;
   overflow-y: auto;
   background: #fff;
 }
@@ -106,9 +95,7 @@ textarea {
 
 <div class="container">
 
-<!-- =======================
-     メイン（左）
-======================= -->
+<!-- ===== 左：メイン ===== -->
 <div class="main">
 
 <h2>アインツ 商品確認</h2>
@@ -148,19 +135,17 @@ textarea {
 <button onclick="copyForAS400()">AS400用 コピペ作成</button>
 
 <br><br>
-<textarea id="output" rows="6"></textarea>
+<textarea id="output" rows="6" style="width:600px;"></textarea>
 
 </div>
 
-<!-- =======================
-     規格検索（右）
-======================= -->
+<!-- ===== 右：規格検索 ===== -->
 <div class="side">
 
 <h3>規格検索（部品№が不明な場合）</h3>
-<p class="guide">※ 規格／品名を部分入力してください</p>
+<p class="guide">※ 規格／品名を部分入力（大文字・小文字区別なし）</p>
 
-規格・品名：<br>
+規格・品名：
 <input type="text" id="specSearch" style="width:95%;">
 <button onclick="searchBySpec()">検索</button>
 
@@ -176,13 +161,13 @@ let customerMaster = [];
 
 /* ===== Eins.csv ===== */
 fetch('Eins.csv').then(r=>r.text()).then(t=>{
-  const lines=t.split('\n').slice(1);
-  einsData=lines.map(l=>{
-    const c=l.split(',');
+  const lines = t.split('\n').slice(1);
+  einsData = lines.map(l=>{
+    const c = l.split(',');
     return {
-      code:(c[0]||'').trim().padStart(6,'0'),
-      name:(c[1]||'').trim(),
-      spec:(c[2]||'').trim(),
+      code: (c[0]||'').trim().padStart(6,'0'),
+      name: (c[1]||'').trim(),
+      spec: (c[2]||'').trim(),
       shelf:(c[4]||'').trim()
     };
   });
@@ -200,7 +185,7 @@ fetch('CustomerMaster.csv').then(r=>r.text()).then(t=>{
   });
 });
 
-/* ===== 商品行生成 ===== */
+/* ===== 行生成 ===== */
 const tbody=document.getElementById('rows');
 for(let i=1;i<=20;i++){
   const tr=document.createElement('tr');
@@ -221,37 +206,44 @@ for(let i=1;i<=20;i++){
   tbody.appendChild(tr);
 }
 
-/* ===== 部品№チェック ===== */
+/* ===== 部品№判定 ===== */
 function checkRow(el){
-  const tr=el.closest('tr');
-  const hit=einsData.find(d=>d.code===el.value);
+  const tr = el.closest('tr');
+  const hit = einsData.find(d=>d.code===el.value);
+
   ['name','spec','shelf'].forEach(c=>{
     tr.querySelector('.'+c).textContent='';
   });
   tr.className='';
+
   if(!el.value) return;
+
   if(hit){
     tr.className='ok';
     tr.querySelector('.name').textContent=hit.name;
     tr.querySelector('.spec').textContent=hit.spec;
     tr.querySelector('.shelf').textContent=hit.shelf;
-  }else{
+  } else {
     tr.className='ng';
     tr.querySelector('.shelf').textContent='該当なし';
   }
 }
 
-/* ===== 規格検索 ===== */
+/* ===== 規格検索（大小文字非区別） ===== */
 function searchBySpec(){
-  const key=document.getElementById('specSearch').value.trim();
-  const box=document.getElementById('specResults');
-  box.innerHTML='';
+  const key = document.getElementById('specSearch').value.trim().toLowerCase();
+  const box = document.getElementById('specResults');
+  box.innerHTML = '';
   if(!key) return;
 
-  einsData.filter(d=>d.spec.includes(key)||d.name.includes(key))
+  einsData
+    .filter(d =>
+      d.spec.toLowerCase().includes(key) ||
+      d.name.toLowerCase().includes(key)
+    )
     .forEach(d=>{
       const div=document.createElement('div');
-      div.innerHTML=
+      div.innerHTML =
         `${d.code} ${d.name}（${d.spec}）<br>
          棚番：${d.shelf}
          <button onclick="setPartNo('${d.code}')">使う</button>`;
@@ -278,7 +270,7 @@ function formatCustomerCode(el){
     const a=v.split('-')[0].slice(0,5);
     const b=v.split('-')[1].slice(0,2);
     v=a+'-'+b;
-  }else{
+  } else {
     v=v.slice(0,5);
   }
   el.value=v;
@@ -287,8 +279,7 @@ function formatCustomerCode(el){
 function searchCustomer(){
   const code=document.getElementById('customerCode').value.trim();
   const hit=customerMaster.find(c=>c.code===code);
-  document.getElementById('customerName').value=
-    hit?hit.name:'（未登録）';
+  document.getElementById('customerName').value=hit?hit.name:'（未登録）';
 }
 
 /* ===== AS400用 ===== */
