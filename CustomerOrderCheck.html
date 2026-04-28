@@ -12,7 +12,6 @@ body {
   background: #fff;
 }
 
-/* ===== レイアウト ===== */
 .container {
   display: flex;
   width: 1400px;
@@ -31,8 +30,9 @@ body {
   background: #fafafa;
 }
 
-/* ===== 共通 ===== */
-h2 { margin-bottom: 4px; }
+h2 {
+  margin-bottom: 4px;
+}
 
 .guide {
   margin: 2px 0;
@@ -50,16 +50,16 @@ th, td {
 }
 
 th {
-  background: #eee;
+  background: #eeeeee;
   text-align: center;
 }
 
-td.no { width: 40px; text-align: center; }
-td.code { width: 90px; }
-td.name { width: 230px; }
-td.spec { width: 250px; }
+td.no    { width: 40px; text-align: center; }
+td.code  { width: 90px; }
+td.name  { width: 230px; }
+td.spec  { width: 250px; }
 td.shelf { width: 120px; }
-td.qty { width: 70px; text-align: center; }
+td.qty   { width: 70px; text-align: center; }
 
 input.code {
   width: 80px;
@@ -74,19 +74,22 @@ input.qty {
 .ok { background: #c8f7c5; }
 .ng { background: #f7c5c5; }
 
-/* ===== 規格検索 ===== */
+textarea {
+  width: 600px;
+}
+
 .resultBox {
   border: 1px solid #999;
   padding: 4px;
   max-height: 420px;
   overflow-y: auto;
   background: #fff;
+  font-size: 12px;
 }
 
 .resultBox div {
   padding: 3px 0;
   border-bottom: 1px dotted #ccc;
-  font-size: 12px;
 }
 </style>
 </head>
@@ -95,7 +98,7 @@ input.qty {
 
 <div class="container">
 
-<!-- ===== 左：メイン ===== -->
+<!-- ========= 左：メイン ======== -->
 <div class="main">
 
 <h2>アインツ 商品確認</h2>
@@ -135,11 +138,11 @@ input.qty {
 <button onclick="copyForAS400()">AS400用 コピペ作成</button>
 
 <br><br>
-<textarea id="output" rows="6" style="width:600px;"></textarea>
+<textarea id="output" rows="6"></textarea>
 
 </div>
 
-<!-- ===== 右：規格検索 ===== -->
+<!-- ========= 右：規格検索 ======== -->
 <div class="side">
 
 <h3>規格検索（部品№が不明な場合）</h3>
@@ -159,6 +162,9 @@ input.qty {
 let einsData = [];
 let customerMaster = [];
 
+/* ★ 今回追加：最後に触った部品№入力欄を記憶 */
+let lastFocusedCodeInput = null;
+
 /* ===== Eins.csv ===== */
 fetch('Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
@@ -175,9 +181,9 @@ fetch('Eins.csv').then(r=>r.text()).then(t=>{
 
 /* ===== CustomerMaster.csv ===== */
 fetch('CustomerMaster.csv').then(r=>r.text()).then(t=>{
-  const lines=t.split('\n').slice(1);
-  customerMaster=lines.map(l=>{
-    const c=l.split(',');
+  const lines = t.split('\n').slice(1);
+  customerMaster = lines.map(l=>{
+    const c = l.split(',');
     return {
       code:(c[0]||'').trim(),
       name:(c[1]||'').trim()
@@ -185,14 +191,15 @@ fetch('CustomerMaster.csv').then(r=>r.text()).then(t=>{
   });
 });
 
-/* ===== 行生成 ===== */
-const tbody=document.getElementById('rows');
+/* ===== 商品行生成 ===== */
+const tbody = document.getElementById('rows');
 for(let i=1;i<=20;i++){
-  const tr=document.createElement('tr');
-  tr.innerHTML=`
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
     <td class="no">${i}</td>
     <td class="code">
       <input class="code" maxlength="6"
+        onfocus="lastFocusedCodeInput=this"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onblur="this.value=this.value.padStart(6,'0');checkRow(this)">
     </td>
@@ -202,11 +209,12 @@ for(let i=1;i<=20;i++){
     <td class="qty">
       <input class="qty" maxlength="3"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-    </td>`;
+    </td>
+  `;
   tbody.appendChild(tr);
 }
 
-/* ===== 部品№判定 ===== */
+/* ===== 部品№チェック ===== */
 function checkRow(el){
   const tr = el.closest('tr');
   const hit = einsData.find(d=>d.code===el.value);
@@ -220,9 +228,9 @@ function checkRow(el){
 
   if(hit){
     tr.className='ok';
-    tr.querySelector('.name').textContent=hit.name;
-    tr.querySelector('.spec').textContent=hit.spec;
-    tr.querySelector('.shelf').textContent=hit.shelf;
+    tr.querySelector('.name').textContent = hit.name;
+    tr.querySelector('.spec').textContent = hit.spec;
+    tr.querySelector('.shelf').textContent = hit.shelf;
   } else {
     tr.className='ng';
     tr.querySelector('.shelf').textContent='該当なし';
@@ -236,27 +244,31 @@ function searchBySpec(){
   box.innerHTML = '';
   if(!key) return;
 
-  einsData
-    .filter(d =>
-      d.spec.toLowerCase().includes(key) ||
-      d.name.toLowerCase().includes(key)
-    )
-    .forEach(d=>{
-      const div=document.createElement('div');
-      div.innerHTML =
-        `${d.code} ${d.name}（${d.spec}）<br>
-         棚番：${d.shelf}
-         <button onclick="setPartNo('${d.code}')">使う</button>`;
-      box.appendChild(div);
-    });
+  einsData.filter(d =>
+    d.spec.toLowerCase().includes(key) ||
+    d.name.toLowerCase().includes(key)
+  ).forEach(d=>{
+    const div = document.createElement('div');
+    div.innerHTML =
+      `${d.code} ${d.name}（${d.spec}）<br>
+       棚番：${d.shelf}
+       <button onclick="setPartNo('${d.code}')">使う</button>`;
+    box.appendChild(div);
+  });
 }
 
-/* ===== 部品№自動セット ===== */
+/* ★ 修正済み：部品№セット（行が飛ばない） */
 function setPartNo(code){
-  const inputs=document.querySelectorAll('input.code');
-  for(const i of inputs){
-    if(!i.value){
-      i.value=code;
+  if (lastFocusedCodeInput && !lastFocusedCodeInput.value) {
+    lastFocusedCodeInput.value = code;
+    lastFocusedCodeInput.blur();
+    return;
+  }
+
+  const inputs = document.querySelectorAll('input.code');
+  for (const i of inputs) {
+    if (!i.value) {
+      i.value = code;
       i.blur();
       break;
     }
@@ -265,34 +277,34 @@ function setPartNo(code){
 
 /* ===== 客先処理 ===== */
 function formatCustomerCode(el){
-  let v=el.value.replace(/[^0-9-]/g,'');
-  if(v.includes('-')){
-    const a=v.split('-')[0].slice(0,5);
-    const b=v.split('-')[1].slice(0,2);
-    v=a+'-'+b;
+  let v = el.value.replace(/[^0-9-]/g, '');
+  if (v.includes('-')) {
+    const a = v.split('-')[0].slice(0,5);
+    const b = v.split('-')[1].slice(0,2);
+    v = a + '-' + b;
   } else {
-    v=v.slice(0,5);
+    v = v.slice(0,5);
   }
-  el.value=v;
+  el.value = v;
 }
 
 function searchCustomer(){
-  const code=document.getElementById('customerCode').value.trim();
-  const hit=customerMaster.find(c=>c.code===code);
-  document.getElementById('customerName').value=hit?hit.name:'（未登録）';
+  const code = document.getElementById('customerCode').value.trim();
+  const hit = customerMaster.find(c=>c.code===code);
+  document.getElementById('customerName').value = hit ? hit.name : '（未登録）';
 }
 
 /* ===== AS400用 ===== */
 function copyForAS400(){
-  let out='';
+  let out = '';
   [...tbody.children].forEach(tr=>{
     if(tr.className==='ok'){
-      const c=tr.querySelector('input.code').value;
-      const q=tr.querySelector('input.qty').value;
-      if(q) out+=`${c}\t${q}\n`;
+      const c = tr.querySelector('input.code').value;
+      const q = tr.querySelector('input.qty').value;
+      if(q) out += `${c}\t${q}\n`;
     }
   });
-  document.getElementById('output').value=out;
+  document.getElementById('output').value = out;
 }
 </script>
 
