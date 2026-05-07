@@ -5,7 +5,10 @@
 <title>貸出部品管理表</title>
 
 <style>
-body { font-family: sans-serif; padding: 20px; }
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
 
 input, select {
   width: 100%;
@@ -14,22 +17,23 @@ input, select {
   box-sizing: border-box;
 }
 
-button {
+/* ✅ ボタン（クリック確実） */
+.search-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
   background: linear-gradient(#5b86e5, #4a6fcf);
   color: white;
-  border: none;
-  padding: 10px 15px;
+  padding: 12px;
   border-radius: 8px;
-  font-size: 16px;
+  text-decoration: none;
+  margin-bottom: 15px;
+  cursor: pointer; /* ← 重要 */
 }
 
 .card {
   border-top: 1px solid #ccc;
   padding: 10px 0;
-}
-
-@media (max-width: 600px) {
-  button { width: 100%; }
 }
 </style>
 </head>
@@ -44,7 +48,8 @@ button {
 
 <input id="keyword" placeholder="部品№ / 品名 / 規格">
 
-<button onclick="search()">検索</button>
+<!-- ✅ aタグで確実クリック -->
+<a class="search-btn" onclick="search()">検索</a>
 
 <div id="count"></div>
 <div id="result"></div>
@@ -59,13 +64,13 @@ button {
 <script>
 let data = [];
 
-// ✅ CSV読込（カンマ完全対応）
+// ✅ CSV読込（確実動作版）
 fetch("./LoanParts.csv?=" + new Date().getTime())
 .then(res => res.text())
 .then(text => {
 
   const rows = text.split("\n");
-  rows.shift(); // ヘッダー削除
+  rows.shift();
 
   rows.forEach(row => {
 
@@ -75,10 +80,10 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
     let current = "";
     let inQuotes = false;
 
-    // ✅ 正しいCSV解析
+    // ✅ カンマ対応CSV解析
     for (let i = 0; i < row.length; i++) {
 
-      let c = row[i];
+      const c = row[i];
 
       if (c === '"') {
         inQuotes = !inQuotes;
@@ -100,6 +105,7 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
       部品№: col[0].trim(),
       品名: col[1].trim(),
       規格: col[2].trim(),
+      Cereal: col[3].trim(),
       保管部署: col[col.length - 1].trim()
     });
 
@@ -129,16 +135,14 @@ function search() {
   const key = document.getElementById("keyword").value.toLowerCase().trim();
   const office = document.getElementById("office").value;
 
-  const result = data.filter(d => {
-    return (
-      (office === "" || d.保管部署 === office) &&
-      (
-        d.部品№.includes(key) ||
-        d.品名.toLowerCase().includes(key) ||
-        d.規格.toLowerCase().includes(key)
-      )
-    );
-  });
+  const result = data.filter(d => (
+    (office === "" || d.保管部署 === office) &&
+    (
+      d.部品№.includes(key) ||
+      d.品名.toLowerCase().includes(key) ||
+      d.規格.toLowerCase().includes(key)
+    )
+  ));
 
   render(result);
 }
@@ -158,11 +162,11 @@ function render(list) {
   }
 
   list.forEach(d => {
-
     div.innerHTML += `
       <div class="card">
         <b>${d.部品№}</b> ${d.品名}<br>
         規格：${d.規格}<br>
+        シリアル：${d.Cereal}<br>
         保管部署：${d.保管部署}
       </div>
     `;
@@ -188,3 +192,4 @@ document.getElementById("spec").addEventListener("input", function() {
 
 </body>
 </html>
+``
