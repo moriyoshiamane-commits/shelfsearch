@@ -19,22 +19,34 @@ h2 { margin-bottom: 10px; }
 label { display: block; margin-bottom: 3px; }
 
 input[type="text"] {
-  width: 300px;
-  height: 30px;
+  width: 320px;
+  height: 32px;
   font-size: 14px;
+  padding: 4px 6px;
+  box-sizing: border-box;
 }
 
 button {
-  padding: 6px 14px;
+  padding: 8px 18px;
+  margin-top: 10px;
   background: linear-gradient(#5b8de3,#3f6ac7);
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.result div {
+.result {
+  margin-top: 15px;
+}
+
+.card {
   border-bottom: 1px dotted #ccc;
-  padding: 6px 0;
+  padding: 8px 0;
+}
+
+.card div {
+  margin: 2px 0;
 }
 </style>
 </head>
@@ -44,13 +56,13 @@ button {
 <h2>貸出部品検索</h2>
 
 <div class="search-box">
-<label>部品№ / 規格</label>
-<input type="text" id="keyword">
+  <label>部品№ / 規格</label>
+  <input type="text" id="keyword">
 </div>
 
 <div class="search-box">
-<label>保管部署</label>
-<input type="text" id="location" placeholder="例：大阪">
+  <label>保管部署</label>
+  <input type="text" id="location" placeholder="例：大阪">
 </div>
 
 <button onclick="searchParts()">検索</button>
@@ -60,53 +72,67 @@ button {
 <script>
 let data = [];
 
+/* ===== CSV 読み込み（カンマ対策版） ===== */
 fetch('LoanParts.csv')
 .then(res => res.text())
 .then(text => {
+
   const lines = text.split('\n').slice(1);
-  data = lines.map(l => {
-    const c = l.split(',');
+
+  data = lines.map(line => {
+
+    // ✅ カンマ入り規格対応
+    const c = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+
     return {
-      code: (c[0]||'').trim(),
-      name: (c[1]||'').trim(),
-      spec: (c[2]||'').trim(),
-      loc:  (c[5]||'').trim()
+      code: (c[0] || '').replace(/"/g,'').trim(),
+      name: (c[1] || '').replace(/"/g,'').trim(),
+      spec: (c[2] || '').replace(/"/g,'').trim(),
+      loc:  (c[5] || '').replace(/"/g,'').trim()
     };
   });
+
 });
 
+/* ===== 検索処理 ===== */
 function searchParts() {
+
   const key = document.getElementById('keyword').value.trim().toLowerCase();
   const loc = document.getElementById('location').value.trim();
+
   const result = document.getElementById('result');
   result.innerHTML = '';
 
-  data.filter(d => {
+  data
+    .filter(d => {
 
-    // ★① まずキーワード条件
-    const keyMatch =
-      !key ||
-      d.code.includes(key) ||
-      d.spec.toLowerCase().includes(key);
+      /* ① キーワード（部品№ or 規格） */
+      const keyMatch =
+        !key ||
+        d.code.includes(key) ||
+        d.spec.toLowerCase().includes(key);
 
-    // ★② 場所条件（入力されてたらだけ効く）
-    const locMatch =
-      !loc ||
-      d.loc.includes(loc);
+      /* ② 場所（入力された時だけ効く） */
+      const locMatch =
+        !loc ||
+        d.loc.includes(loc);
 
-    return keyMatch && locMatch;
+      return keyMatch && locMatch;
+    })
+    .forEach(d => {
 
-  }).forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'card';
 
-    const div = document.createElement('div');
-    div.innerHTML = `
-      <strong>${d.code}</strong> ${d.name}<br>
-      規格：${d.spec}<br>
-      保管：${d.loc}
-    `;
+      card.innerHTML = `
+        <div><strong>${d.code}　${d.name}</strong></div>
+        <div>規格：${d.spec}</div>
+        <div>保管部署：${d.loc}</div>
+      `;
 
-    result.appendChild(div);
-  });
+      result.appendChild(card);
+    });
+
 }
 </script>
 
