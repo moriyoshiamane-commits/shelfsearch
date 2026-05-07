@@ -63,8 +63,8 @@ input, select {
 <script>
 let data = [];
 
-// ✅ CSV読込
-fetch("./LoanParts.csv?=" + new Date().getTime())
+// ✅ 絶対URL（ここだけが修正点）
+fetch("https://moriyoshiamane-commits.github.io/shelfsearch/LoanParts.csv?=" + new Date().getTime())
 .then(res => res.text())
 .then(text => {
 
@@ -111,6 +111,10 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
   });
 
   initOffice();
+
+})
+.catch(() => {
+  document.getElementById("status").innerText = "CSV読込失敗";
 });
 
 // 保管部署
@@ -173,4 +177,3 @@ document.getElementById("spec").addEventListener("input", function() {
 
 </body>
 </html>
-``
