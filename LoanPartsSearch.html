@@ -6,7 +6,6 @@
 
 <style>
 body { font-family: sans-serif; padding: 20px; }
-
 .wrap { max-width: 500px; }
 
 input, select {
@@ -39,7 +38,7 @@ input, select {
 
 <h1>貸出部品管理表</h1>
 
-<div id="status">読込OK</div>
+<div id="status">読込中…</div>
 
 <select id="office">
   <option value="">すべて</option>
@@ -64,45 +63,55 @@ input, select {
 <script>
 let data = [];
 
-// ✅ CSVを直接埋め込み（テスト用）
-const csv = `部品№,品名,規格,Cereal,注記,保管部署
-331191,ペンダントユニット（銘板無),"PS1-1.5B (STEC-S1,STD)",03845,,大阪
-331191,ペンダントユニット（銘板無),"PS1-1.5B (STEC-S1,STD)",A0932,,大阪
-260702,ＡＤ入力基板,ADIN(100559-ADI-PR01),1210836B,,大阪`;
+// ✅ CSV読込
+fetch("./LoanParts.csv?=" + new Date().getTime())
+.then(res => res.text())
+.then(text => {
 
-const rows = csv.split("\n");
-rows.shift();
+  document.getElementById("status").innerText = "CSV読込OK";
 
-rows.forEach(row => {
+  const rows = text.split("\n");
+  rows.shift();
 
-  if (!row.trim()) return;
+  rows.forEach(row => {
 
-  let col = [];
-  let cur = "";
-  let q = false;
+    if (!row.trim()) return;
 
-  for (let i = 0; i < row.length; i++) {
-    const c = row[i];
+    let col = [];
+    let current = "";
+    let inQuotes = false;
 
-    if (c === '"') { q = !q; continue; }
+    for (let i = 0; i < row.length; i++) {
+      const c = row[i];
 
-    if (c === ',' && !q) {
-      col.push(cur); cur="";
-    } else {
-      cur += c;
+      if (c === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
+
+      if (c === ',' && !inQuotes) {
+        col.push(current);
+        current = "";
+      } else {
+        current += c;
+      }
     }
-  }
-  col.push(cur);
+    col.push(current);
 
-  data.push({
-    部品№: col[0],
-    品名: col[1],
-    規格: col[2],
-    保管部署: col[col.length - 1]
+    if (col.length < 6) return;
+
+    data.push({
+      部品№: col[0].trim(),
+      品名: col[1].trim(),
+      規格: col[2].trim(),
+      Cereal: col[3].trim(),
+      保管部署: col[col.length - 1].trim()
+    });
+
   });
-});
 
-initOffice();
+  initOffice();
+});
 
 // 保管部署
 function initOffice() {
@@ -110,6 +119,7 @@ function initOffice() {
   const list = [...new Set(data.map(d => d.保管部署))];
 
   list.forEach(o => {
+    if (!o) return;
     const op = document.createElement("option");
     op.value = o;
     op.text = o;
@@ -163,3 +173,4 @@ document.getElementById("spec").addEventListener("input", function() {
 
 </body>
 </html>
+``
