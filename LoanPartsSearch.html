@@ -63,8 +63,7 @@ input, select {
 <script>
 let data = [];
 
-// ✅ 絶対URL（ここだけが修正点）
-fetch("https://moriyoshiamane-commits.github.io/shelfsearch/LoanParts.csv?=" + new Date().getTime())
+fetch("https://moriyoshiamane-commits.github.io/shelfsearch/LoanParts.csv")
 .then(res => res.text())
 .then(text => {
 
@@ -104,20 +103,17 @@ fetch("https://moriyoshiamane-commits.github.io/shelfsearch/LoanParts.csv?=" + n
       部品№: col[0].trim(),
       品名: col[1].trim(),
       規格: col[2].trim(),
-      Cereal: col[3].trim(),
       保管部署: col[col.length - 1].trim()
     });
 
   });
 
   initOffice();
-
 })
 .catch(() => {
   document.getElementById("status").innerText = "CSV読込失敗";
 });
 
-// 保管部署
 function initOffice() {
   const sel = document.getElementById("office");
   const list = [...new Set(data.map(d => d.保管部署))];
@@ -131,7 +127,6 @@ function initOffice() {
   });
 }
 
-// 検索
 function search() {
 
   const key = document.getElementById("keyword").value.toLowerCase();
@@ -144,22 +139,17 @@ function search() {
      d.規格.toLowerCase().includes(key))
   );
 
-  const div = document.getElementById("result");
-  const count = document.getElementById("count");
-
-  count.innerText = result.length + " 件";
-  div.innerHTML = result.length
-    ? result.map(d => `
+  document.getElementById("count").innerText = result.length + " 件";
+  document.getElementById("result").innerHTML =
+    result.length ? result.map(d => `
       <div class="card">
         <b>${d.部品№}</b> ${d.品名}<br>
-        規格：${d.規格}<br>
-        保管部署：${d.保管部署}
+        ${d.規格}<br>
+        ${d.保管部署}
       </div>
-    `).join("")
-    : "該当なし";
+    `).join("") : "該当なし";
 }
 
-// 規格検索
 document.getElementById("spec").addEventListener("input", function() {
   const val = this.value.toLowerCase();
   const set = new Set();
@@ -177,3 +167,4 @@ document.getElementById("spec").addEventListener("input", function() {
 
 </body>
 </html>
+``
