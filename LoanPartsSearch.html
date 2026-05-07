@@ -7,9 +7,7 @@
 <style>
 body { font-family: sans-serif; padding: 20px; }
 
-.wrap {
-  max-width: 500px;
-}
+.wrap { max-width: 500px; }
 
 input, select {
   width: 100%;
@@ -41,7 +39,7 @@ input, select {
 
 <h1>貸出部品管理表</h1>
 
-<div id="status">読込中...</div>
+<div id="status">読込中…</div>
 
 <select id="office">
   <option value="">すべて</option>
@@ -66,10 +64,10 @@ input, select {
 <script>
 let data = [];
 
-// ✅ CSV読込確認
-fetch("./LoanParts.csv?=" + new Date().getTime())
+// ✅ 絶対パス指定（ここが最重要）
+fetch("/shelfsearch/LoanParts.csv?" + new Date().getTime())
 .then(res => {
-  if (!res.ok) throw new Error("CSV読めない");
+  if (!res.ok) throw new Error("NG");
   return res.text();
 })
 .then(text => {
@@ -88,7 +86,6 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
     let inQuotes = false;
 
     for (let i = 0; i < row.length; i++) {
-
       const c = row[i];
 
       if (c === '"') {
@@ -114,6 +111,7 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
       Cereal: col[3].trim(),
       保管部署: col[col.length - 1].trim()
     });
+
   });
 
   initOffice();
@@ -121,13 +119,12 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
 })
 .catch(e => {
   document.getElementById("status").innerText = "CSV読込失敗";
-  console.error(e);
 });
 
 // 保管部署
 function initOffice() {
-  const list = [...new Set(data.map(d => d.保管部署))];
   const sel = document.getElementById("office");
+  const list = [...new Set(data.map(d => d.保管部署))];
 
   list.forEach(o => {
     if (!o) return;
@@ -168,7 +165,6 @@ function search() {
 
 // 規格検索
 document.getElementById("spec").addEventListener("input", function() {
-
   const val = this.value.toLowerCase();
   const set = new Set();
 
