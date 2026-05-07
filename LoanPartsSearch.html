@@ -5,25 +5,15 @@
 <title>貸出部品管理表</title>
 
 <style>
-body {
-  font-family: sans-serif;
-  padding: 20px;
-}
+body { font-family: sans-serif; padding: 20px; }
 
-h1 {
-  margin-bottom: 20px;
-}
-
-/* 入力 */
 input, select {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
-  font-size: 16px;
   box-sizing: border-box;
 }
 
-/* ボタン（既存と統一） */
 button {
   background: linear-gradient(#5b86e5, #4a6fcf);
   color: white;
@@ -33,17 +23,13 @@ button {
   font-size: 16px;
 }
 
-/* 結果カード */
 .card {
   border-top: 1px solid #ccc;
   padding: 10px 0;
 }
 
-/* スマホ */
 @media (max-width: 600px) {
-  button {
-    width: 100%;
-  }
+  button { width: 100%; }
 }
 </style>
 </head>
@@ -52,12 +38,10 @@ button {
 
 <h1>貸出部品管理表</h1>
 
-<!-- 保管部署 -->
 <select id="office">
   <option value="">すべて</option>
 </select>
 
-<!-- キーワード -->
 <input id="keyword" placeholder="部品№ / 品名 / 規格">
 
 <button onclick="search()">検索</button>
@@ -75,43 +59,37 @@ button {
 <script>
 let data = [];
 
-// ✅ CSV読込（完全対策版）
 fetch("Loan Parts Tracking List.csv")
 .then(res => res.text())
 .then(text => {
 
-  // ① 空行除去
-  const rows = text.split(/\r?\n/).filter(r => r.trim() !== "");
+  const rows = text.split("\n");
 
-  // ② ヘッダー削除
+  // ヘッダー削除
   rows.shift();
 
-  data = rows.map(row => {
+  rows.forEach(row => {
 
-    // ③ カンマ対応分割
-    const cols = row.match(/(".*?"|[^",\r\n]+)(?=,|\r?\n|$)/g);
+    if (!row.trim()) return;
 
-    // ④ 不正データ除去
-    if (!cols || cols.length < 6) return null;
+    const col = row.split(",");
 
-    return {
-      部品№: cols[0].replace(/"/g, ""),
-      品名: cols[1].replace(/"/g, ""),
-      規格: cols[2].replace(/"/g, ""),
-      保管部署: cols[5].replace(/"/g, "")
-    };
+    data.push({
+      部品№: col[0] || "",
+      品名: col[1] || "",
+      規格: col[2] || "",
+      保管部署: col[5] || ""
+    });
 
-  }).filter(d => d !== null);
-
-  console.log("読込件数:", data.length);
+  });
 
   initOffice();
 });
 
-// ✅ 保管部署セット
+// 保管部署
 function initOffice() {
-  const sel = document.getElementById("office");
   const list = [...new Set(data.map(d => d.保管部署))];
+  const sel = document.getElementById("office");
 
   list.forEach(o => {
     const op = document.createElement("option");
@@ -121,8 +99,9 @@ function initOffice() {
   });
 }
 
-// ✅ 検索
+// 検索
 function search() {
+
   const key = document.getElementById("keyword").value.toLowerCase();
   const office = document.getElementById("office").value;
 
@@ -140,36 +119,32 @@ function search() {
   render(result);
 }
 
-// ✅ 表示
+// 表示
 function render(list) {
+
   const div = document.getElementById("result");
   const count = document.getElementById("count");
-
-  if (list.length === 0) {
-    div.innerHTML = "該当なし";
-    count.innerHTML = "0 件";
-    return;
-  }
 
   div.innerHTML = "";
   count.innerHTML = list.length + " 件";
 
   list.forEach(d => {
 
-    const el = document.createElement("div");
-    el.className = "card";
-
-    el.innerHTML = `
-      <b>${d.部品№}</b> ${d.品名}<br>
-      規格：${d.規格}<br>
-      保管部署：${d.保管部署}
+    div.innerHTML += `
+      <div class="card">
+        <b>${d.部品№}</b> ${d.品名}<br>
+        規格：${d.規格}<br>
+        保管部署：${d.保管部署}
+      </div>
     `;
-
-    div.appendChild(el);
   });
+
+  if (list.length === 0) {
+    div.innerHTML = "該当なし";
+  }
 }
 
-// ✅ 規格検索
+// 規格検索
 document.getElementById("spec").addEventListener("input", function() {
 
   const val = this.value.toLowerCase();
@@ -182,9 +157,10 @@ document.getElementById("spec").addEventListener("input", function() {
   });
 
   document.getElementById("specResult").innerText =
-    set.size ? "該当部署： " + [...set].join(" / ") : "該当なし";
+    set.size ? "該当部署：" + [...set].join(" / ") : "該当なし";
 });
 </script>
 
 </body>
 </html>
+``
