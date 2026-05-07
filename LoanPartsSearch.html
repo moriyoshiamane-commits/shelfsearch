@@ -2,86 +2,111 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>貸出部品管理表</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>貸出部品検索</title>
 
 <style>
-body { font-family: sans-serif; padding: 20px; }
-.wrap { max-width: 500px; }
-
-input, select {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 8px;
-  box-sizing: border-box;
+body {
+  font-family: sans-serif;
+  font-size: 14px;
+  margin: 10px;
 }
 
-.button {
-  display: inline-block;
-  background: linear-gradient(#5b86e5, #4a6fcf);
-  color: white;
-  padding: 8px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 10px;
+h2 { margin-bottom: 10px; }
+
+.search-box { margin-bottom: 10px; }
+
+label { display: block; margin-bottom: 3px; }
+
+input[type="text"] {
+  width: 300px;
+  height: 30px;
+  font-size: 14px;
 }
 
-.card { border-top: 1px solid #ccc; padding: 10px 0; }
+button {
+  padding: 6px 14px;
+  background: linear-gradient(#5b8de3,#3f6ac7);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+}
+
+.result div {
+  border-bottom: 1px dotted #ccc;
+  padding: 6px 0;
+}
 </style>
 </head>
 
 <body>
 
-<div class="wrap">
+<h2>貸出部品検索</h2>
 
-<h1>貸出部品管理表</h1>
-
-<div id="status">動作確認OK</div>
-
-<select id="office">
-  <option value="">すべて</option>
-  <option value="大阪">大阪</option>
-</select>
-
-<input id="keyword" placeholder="部品№ / 品名 / 規格">
-
-<div class="button" onclick="search()">検索</div>
-
-<div id="count"></div>
-<div id="result"></div>
-
+<div class="search-box">
+<label>部品№ / 規格</label>
+<input type="text" id="keyword">
 </div>
 
+<div class="search-box">
+<label>保管部署</label>
+<input type="text" id="location" placeholder="例：大阪">
+</div>
+
+<button onclick="searchParts()">検索</button>
+
+<div id="result" class="result"></div>
+
 <script>
-const data = [
-  {部品№:"331191", 品名:"ペンダントユニット", 規格:"PS1-1.5B", 保管部署:"大阪"},
-  {部品№:"260702", 品名:"AD入力基板", 規格:"ADIN", 保管部署:"大阪"}
-];
+let data = [];
 
-function search() {
+fetch('LoanParts.csv')
+.then(res => res.text())
+.then(text => {
+  const lines = text.split('\n').slice(1);
+  data = lines.map(l => {
+    const c = l.split(',');
+    return {
+      code: (c[0]||'').trim(),
+      name: (c[1]||'').trim(),
+      spec: (c[2]||'').trim(),
+      loc:  (c[5]||'').trim()
+    };
+  });
+});
 
-  const key = document.getElementById("keyword").value.toLowerCase();
-  const office = document.getElementById("office").value;
+function searchParts() {
+  const key = document.getElementById('keyword').value.trim().toLowerCase();
+  const loc = document.getElementById('location').value.trim();
+  const result = document.getElementById('result');
+  result.innerHTML = '';
 
-  const result = data.filter(d =>
-    (office === "" || d.保管部署 === office) &&
-    (
-      d.部品№.includes(key) ||
-      d.品名.toLowerCase().includes(key) ||
-      d.規格.toLowerCase().includes(key)
-    )
-  );
+  data.filter(d => {
 
-  document.getElementById("count").innerText = result.length + " 件";
-  document.getElementById("result").innerHTML =
-    result.length
-      ? result.map(d => `
-        <div class="card">
-          <b>${d.部品№}</b> ${d.品名}<br>
-          ${d.規格}<br>
-          ${d.保管部署}
-        </div>
-      `).join("")
-      : "該当なし";
+    // ★① まずキーワード条件
+    const keyMatch =
+      !key ||
+      d.code.includes(key) ||
+      d.spec.toLowerCase().includes(key);
+
+    // ★② 場所条件（入力されてたらだけ効く）
+    const locMatch =
+      !loc ||
+      d.loc.includes(loc);
+
+    return keyMatch && locMatch;
+
+  }).forEach(d => {
+
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <strong>${d.code}</strong> ${d.name}<br>
+      規格：${d.spec}<br>
+      保管：${d.loc}
+    `;
+
+    result.appendChild(div);
+  });
 }
 </script>
 
