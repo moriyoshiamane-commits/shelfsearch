@@ -10,7 +10,7 @@ body {
   padding: 20px;
 }
 
-/* ✅ 統一ボタン */
+/* ボタン */
 .menu-btn {
   display: block;
   width: 100%;
@@ -20,21 +20,12 @@ body {
   text-align: left;
   text-decoration: none;
   font-size: 18px;
-  
+
   color: #fff;
   background: linear-gradient(#5b86e5, #4a6fcf);
   border-radius: 10px;
 
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-  box-sizing: border-box; /* ← これが重要 */
-}
-
-/* ✅ スマホ微調整 */
-@media (max-width: 600px) {
-  .menu-btn {
-    font-size: 16px;
-    padding: 12px;
-  }
+  box-sizing: border-box;
 }
 </style>
 </head>
@@ -49,7 +40,7 @@ body {
 <a href="ShelfSearch.html" class="menu-btn">棚番検索</a>
 <a href="YamatoSearch.html" class="menu-btn">ヤマト運輸</a>
 
-<!-- ✅ 追加（ここが今回） -->
+<!-- ✅ ここ修正 -->
 <a href="LoanPartsSearch.html" class="menu-btn">貸出部品管理表</a>
 
 </body>
