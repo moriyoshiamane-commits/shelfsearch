@@ -5,18 +5,13 @@
 <title>貸出部品管理表</title>
 
 <style>
-body {
-  font-family: sans-serif;
-  padding: 20px;
-}
-
+body { font-family: sans-serif; padding: 20px; }
 input, select {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   box-sizing: border-box;
 }
-
 button {
   background: linear-gradient(#5b86e5, #4a6fcf);
   color: white;
@@ -25,12 +20,7 @@ button {
   border-radius: 8px;
   font-size: 16px;
 }
-
-.card {
-  border-top: 1px solid #ccc;
-  padding: 10px 0;
-}
-
+.card { border-top: 1px solid #ccc; padding: 10px 0; }
 @media (max-width: 600px) {
   button { width: 100%; }
 }
@@ -62,26 +52,35 @@ button {
 <script>
 let data = [];
 
-// ✅ CSV読込（安定版）
+// ✅ 読込（カンマ無視版）
 fetch("./LoanParts.csv?=" + new Date().getTime())
 .then(res => res.text())
 .then(text => {
 
   const rows = text.split("\n");
-
-  rows.shift(); // ヘッダー削除
+  rows.shift();
 
   rows.forEach(row => {
 
     if (!row.trim()) return;
 
+    // ✅ ここが変更点
     const col = row.split(",");
 
+    const part = col[0] || "";
+    const name = col[1] || "";
+
+    // ✅ 規格は「途中全部つなぐ」
+    const spec = col.slice(2, col.length - 3).join(",");
+
+    // ✅ 最後から取得（ここが重要）
+    const office = col[col.length - 1];
+
     data.push({
-      部品№: (col[0] || "").replace(/"/g, "").trim(),
-      品名: (col[1] || "").replace(/"/g, "").trim(),
-      規格: (col[2] || "").replace(/"/g, "").trim(),
-      保管部署: (col[5] || "").replace(/"/g, "").trim()
+      部品№: part.replace(/"/g, "").trim(),
+      品名: name.replace(/"/g, "").trim(),
+      規格: spec.replace(/"/g, "").trim(),
+      保管部署: (office || "").replace(/"/g, "").trim()
     });
 
   });
@@ -89,15 +88,13 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
   initOffice();
 });
 
-// 保管部署リスト
+// 保管部署
 function initOffice() {
-
   const list = [...new Set(data.map(d => d.保管部署))];
   const sel = document.getElementById("office");
 
   list.forEach(o => {
     if (!o) return;
-
     const op = document.createElement("option");
     op.value = o;
     op.text = o;
@@ -107,7 +104,6 @@ function initOffice() {
 
 // 検索
 function search() {
-
   const key = document.getElementById("keyword").value.toLowerCase().trim();
   const office = document.getElementById("office").value;
 
@@ -127,7 +123,6 @@ function search() {
 
 // 表示
 function render(list) {
-
   const div = document.getElementById("result");
   const count = document.getElementById("count");
 
@@ -140,7 +135,6 @@ function render(list) {
   }
 
   list.forEach(d => {
-
     div.innerHTML += `
       <div class="card">
         <b>${d.部品№}</b> ${d.品名}<br>
@@ -170,4 +164,3 @@ document.getElementById("spec").addEventListener("input", function() {
 
 </body>
 </html>
-``
