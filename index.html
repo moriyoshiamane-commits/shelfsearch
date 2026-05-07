@@ -2,46 +2,48 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>業務検索</title>
 
 <style>
 body {
   font-family: sans-serif;
-  padding: 20px;
+  margin: 10px;
 }
 
-/* ボタン */
-.menu-btn {
+.menu-button {
   display: block;
   width: 100%;
-  max-width: 400px;
-  margin: 10px 0;
-  padding: 15px;
-  text-align: left;
+  max-width: 360px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: linear-gradient(#5b8de3, #3f6ac7);
+  color: #ffffff;
+  font-weight: bold;
   text-decoration: none;
-  font-size: 18px;
-
-  color: #fff;
-  background: linear-gradient(#5b86e5, #4a6fcf);
-  border-radius: 10px;
-
-  box-sizing: border-box;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 </style>
 </head>
 
 <body>
 
-<h1>業務検索</h1>
+<h2>業務検索</h2>
 
-<a href="CustomerSearch.html" class="menu-btn">客先検索</a>
-<a href="CustomerOrderCheck.html" class="menu-btn">アインツ 商品確認</a>
-<a href="AfterSupportSearch.html" class="menu-btn">アフター対応</a>
-<a href="ShelfSearch.html" class="menu-btn">棚番検索</a>
-<a href="YamatoSearch.html" class="menu-btn">ヤマト運輸</a>
+<!-- 既存 -->
+<a href="CustomerSearch.html" class="menu-button">客先検索</a>
 
-<!-- ✅ ここ修正 -->
-<a href="LoanPartsSearch.html" class="menu-btn">貸出部品管理表</a>
+<a href="CustomerOrderCheck.html" class="menu-button">アインツ 商品確認</a>
+
+<a href="AfterSupportSearch.html" class="menu-button">アフター対応</a>
+
+<a href="ShelfSearch.html" class="menu-button">棚番検索</a>
+
+<a href="YamatoSearch.html" class="menu-button">ヤマト運輸</a>
+
+<!-- ★追加（ここだけ） -->
+<a href="LoanPartsSearch.html" class="menu-button">貸出部品検索</a>
 
 </body>
 </html>
