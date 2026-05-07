@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>貸出部品管理表</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+button {
+  background: linear-gradient(#5b86e5, #4a6fcf);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.card {
+  border-top: 1px solid #ccc;
+  padding: 10px 0;
+}
+</style>
+</head>
+
+<body>
+
+<h1>貸出部品管理表</h1>
+
+<select id="office">
+  <option value="">すべて</option>
+</select>
+
+<input id="keyword" placeholder="部品№ / 品名 / 規格">
+
+<button onclick="search()">検索</button>
+
+<div id="result"></div>
+
+<hr>
+
+<h2>規格から保管部署検索</h2>
+<input id="spec">
+<div id="specResult"></div>
+
+<script>
+let data = [];
+
+fetch("Loan Parts Tracking List.csv")
+.then(res => res.text())
+.then(text => {
+  const lines = text.split("\n").slice(1);
+
+  data = lines.map(l => {
+    const c = l.split(",");
+    return {
+      部品№: c[0],
+      品名: c[1],
+      規格: c[2],
+      保管部署: c[5]
+    };
+  });
+
+  initOffice();
+});
+
+function initOffice() {
+  const list = [...new Set(data.map(d => d.保管部署))];
+  const sel = document.getElementById("office");
+
+  list.forEach(o => {
+    const op = document.createElement("option");
+    op.value = o;
+    op.text = o;
+    sel.appendChild(op);
+  });
+}
+
+function search() {
+  const key = document.getElementById("keyword").value.toLowerCase();
+  const office = document.getElementById("office").value;
+
+  const result = data.filter(d => {
+    return (
+      (office === "" || d.保管部署 === office) &&
+      (
+        d.部品№.includes(key) ||
+        d.品名.toLowerCase().includes(key) ||
+        d.規格.toLowerCase().includes(key)
+      )
+    );
+  });
+
+  render(result);
+}
+
+function render(list) {
+  const div = document.getElementById("result");
+  div.innerHTML = "";
+
+  list.forEach(d => {
+    const el = document.createElement("div");
+    el.className = "card";
+
+    el.innerHTML = `
+      <b>${d.部品№}</b> ${d.品名}<br>
+      規格：${d.規格}<br>
+      保管部署：${d.保管部署}
+    `;
+
+    div.appendChild(el);
+  });
+}
+
+// 規格→部署
+document.getElementById("spec").addEventListener("input", function() {
+
+  const val = this.value.toLowerCase();
+  const set = new Set();
+
+  data.forEach(d => {
+    if (d.規格.toLowerCase().includes(val)) {
+      set.add(d.保管部署);
+    }
+  });
+
+  document.getElementById("specResult").innerText =
+    set.size ? "該当部署：" + [...set].join(" / ") : "該当なし";
+});
+</script>
+
+</body>
+</html>
