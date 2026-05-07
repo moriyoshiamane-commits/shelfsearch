@@ -2,52 +2,55 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-
-<!-- ★ スマホ全面表示のために追加 -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>業務検索</title>
 
 <style>
-  body {
-    font-family: sans-serif;
-    margin: 10px;
-  }
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
 
-  .menu-button {
-    display: block;
-    width: 100%;
-    max-width: 360px;   /* PCでも広がり過ぎない */
+/* ✅ 統一ボタン */
+.menu-btn {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 10px 0;
+  padding: 15px;
+  text-align: left;
+  text-decoration: none;
+  font-size: 18px;
+  
+  color: #fff;
+  background: linear-gradient(#5b86e5, #4a6fcf);
+  border-radius: 10px;
+
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  box-sizing: border-box; /* ← これが重要 */
+}
+
+/* ✅ スマホ微調整 */
+@media (max-width: 600px) {
+  .menu-btn {
+    font-size: 16px;
     padding: 12px;
-    margin-bottom: 12px;
-    background: linear-gradient(#5b8de3, #3f6ac7);
-    color: #ffffff;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 6px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
+}
 </style>
 </head>
 
 <body>
 
-<h2>業務検索</h2>
+<h1>業務検索</h1>
 
-<a href="CustomerSearch.html" class="menu-button">客先検索</a>
+<a href="CustomerSearch.html" class="menu-btn">客先検索</a>
+<a href="CustomerOrderCheck.html" class="menu-btn">アインツ 商品確認</a>
+<a href="AfterSupportSearch.html" class="menu-btn">アフター対応</a>
+<a href="ShelfSearch.html" class="menu-btn">棚番検索</a>
+<a href="YamatoSearch.html" class="menu-btn">ヤマト運輸</a>
 
-<a href="CustomerOrderCheck.html" class="menu-button">
-  アインツ 商品確認
-</a>
+<!-- ✅ 追加（ここが今回） -->
+<a href="LoanPartsSearch.html" class="menu-btn">貸出部品管理表</a>
 
-<a href="AfterSupportSearch.html" class="menu-button">アフター対応</a>
-
-<a href="ShelfSearch.html" class="menu-button">棚番検索</a>
-
-<a href="YamatoSearch.html" class="menu-button">ヤマト運輸</a>
-
-<a href="ShelfSearch.html" class="menu-btn">貸出部品管理表</a>
-  
 </body>
 </html>
-``
