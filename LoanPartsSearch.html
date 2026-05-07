@@ -10,27 +10,30 @@ body {
   padding: 20px;
 }
 
+/* 入力 */
 input, select {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   box-sizing: border-box;
+  font-size: 16px;
 }
 
-/* ✅ ボタン（クリック確実） */
-.search-btn {
-  display: block;
-  width: 100%;
+/* ボタン（既存に近い幅・形） */
+.button {
+  display: inline-block;
+  width: auto;
+  min-width: 120px;
   text-align: center;
   background: linear-gradient(#5b86e5, #4a6fcf);
   color: white;
-  padding: 12px;
+  padding: 10px 20px;
   border-radius: 8px;
-  text-decoration: none;
+  cursor: pointer;
   margin-bottom: 15px;
-  cursor: pointer; /* ← 重要 */
 }
 
+/* 結果 */
 .card {
   border-top: 1px solid #ccc;
   padding: 10px 0;
@@ -48,8 +51,7 @@ input, select {
 
 <input id="keyword" placeholder="部品№ / 品名 / 規格">
 
-<!-- ✅ aタグで確実クリック -->
-<a class="search-btn" onclick="search()">検索</a>
+<div class="button" onclick="search()">検索</div>
 
 <div id="count"></div>
 <div id="result"></div>
@@ -64,7 +66,6 @@ input, select {
 <script>
 let data = [];
 
-// ✅ CSV読込（確実動作版）
 fetch("./LoanParts.csv?=" + new Date().getTime())
 .then(res => res.text())
 .then(text => {
@@ -80,9 +81,7 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
     let current = "";
     let inQuotes = false;
 
-    // ✅ カンマ対応CSV解析
     for (let i = 0; i < row.length; i++) {
-
       const c = row[i];
 
       if (c === '"') {
@@ -116,12 +115,11 @@ fetch("./LoanParts.csv?=" + new Date().getTime())
 
 // 保管部署
 function initOffice() {
-  const list = [...new Set(data.map(d => d.保管部署))];
   const sel = document.getElementById("office");
+  const list = [...new Set(data.map(d => d.保管部署))];
 
   list.forEach(o => {
     if (!o) return;
-
     const op = document.createElement("option");
     op.value = o;
     op.text = o;
@@ -144,24 +142,18 @@ function search() {
     )
   ));
 
-  render(result);
-}
-
-// 表示
-function render(list) {
-
   const div = document.getElementById("result");
   const count = document.getElementById("count");
 
+  count.innerHTML = result.length + " 件";
   div.innerHTML = "";
-  count.innerHTML = list.length + " 件";
 
-  if (list.length === 0) {
+  if (result.length === 0) {
     div.innerHTML = "該当なし";
     return;
   }
 
-  list.forEach(d => {
+  result.forEach(d => {
     div.innerHTML += `
       <div class="card">
         <b>${d.部品№}</b> ${d.品名}<br>
@@ -175,7 +167,6 @@ function render(list) {
 
 // 規格検索
 document.getElementById("spec").addEventListener("input", function() {
-
   const val = this.value.toLowerCase().trim();
   const set = new Set();
 
@@ -186,10 +177,9 @@ document.getElementById("spec").addEventListener("input", function() {
   });
 
   document.getElementById("specResult").innerText =
-    set.size ? "該当部署：" + [...set].join(" / ") : "該当なし";
+    set.size ? "該当部署：" + [...set].join(" / ") : "";
 });
 </script>
 
 </body>
 </html>
-``
