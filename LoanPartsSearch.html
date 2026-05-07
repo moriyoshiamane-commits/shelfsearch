@@ -35,13 +35,14 @@ input, select {
 
 <h1>貸出部品管理表</h1>
 
-<div id="status">読込中…</div>
+<div id="status">動作確認OK</div>
 
 <select id="office">
   <option value="">すべて</option>
+  <option value="大阪">大阪</option>
 </select>
 
-<input id="keyword">
+<input id="keyword" placeholder="部品№ / 品名 / 規格">
 
 <div class="button" onclick="search()">検索</div>
 
@@ -51,89 +52,36 @@ input, select {
 </div>
 
 <script>
-let data = [];
+const data = [
+  {部品№:"331191", 品名:"ペンダントユニット", 規格:"PS1-1.5B", 保管部署:"大阪"},
+  {部品№:"260702", 品名:"AD入力基板", 規格:"ADIN", 保管部署:"大阪"}
+];
 
-// ✅ 5秒で強制終了
-let timeout = setTimeout(() => {
-  document.getElementById("status").innerText = "読込タイムアウト";
-}, 5000);
-
-// ✅ fetch
-fetch("https://moriyoshiamane-commits.github.io/shelfsearch/LoanParts.csv")
-.then(res => {
-  clearTimeout(timeout); // ← 成功したら止める
-  return res.text();
-})
-.then(text => {
-
-  document.getElementById("status").innerText = "CSV読込OK";
-
-  const rows = text.split("\n");
-  rows.shift();
-
-  rows.forEach(row => {
-    if (!row.trim()) return;
-
-    let col = [];
-    let cur = "";
-    let q = false;
-
-    for (let c of row) {
-      if (c === '"') { q = !q; continue; }
-      if (c === ',' && !q) {
-        col.push(cur); cur="";
-      } else {
-        cur += c;
-      }
-    }
-    col.push(cur);
-
-    data.push({
-      部品№: col[0],
-      品名: col[1],
-      規格: col[2],
-      保管部署: col[col.length - 1]
-    });
-  });
-
-  initOffice();
-})
-.catch(() => {
-  document.getElementById("status").innerText = "CSV読込失敗";
-});
-
-// 保管部署
-function initOffice() {
-  const sel = document.getElementById("office");
-  [...new Set(data.map(d => d.保管部署))].forEach(o => {
-    const op = document.createElement("option");
-    op.value = o;
-    op.text = o;
-    sel.appendChild(op);
-  });
-}
-
-// 検索
 function search() {
+
   const key = document.getElementById("keyword").value.toLowerCase();
   const office = document.getElementById("office").value;
 
-  const list = data.filter(d =>
+  const result = data.filter(d =>
     (office === "" || d.保管部署 === office) &&
-    (d.部品№.includes(key) ||
-     d.品名.toLowerCase().includes(key) ||
-     d.規格.toLowerCase().includes(key))
+    (
+      d.部品№.includes(key) ||
+      d.品名.toLowerCase().includes(key) ||
+      d.規格.toLowerCase().includes(key)
+    )
   );
 
-  document.getElementById("count").innerText = list.length + " 件";
+  document.getElementById("count").innerText = result.length + " 件";
   document.getElementById("result").innerHTML =
-    list.length ? list.map(d => `
-      <div class="card">
-        <b>${d.部品№}</b> ${d.品名}<br>
-        ${d.規格}<br>
-        ${d.保管部署}
-      </div>
-    `).join("") : "該当なし";
+    result.length
+      ? result.map(d => `
+        <div class="card">
+          <b>${d.部品№}</b> ${d.品名}<br>
+          ${d.規格}<br>
+          ${d.保管部署}
+        </div>
+      `).join("")
+      : "該当なし";
 }
 </script>
 
