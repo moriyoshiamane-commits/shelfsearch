@@ -72,31 +72,30 @@ button {
 
 let data = [];
 
+// ===== CSV読み込み =====
 fetch('LoanParts.csv')
 .then(res => res.text())
 .then(text => {
 
-  const lines = text.split('\n')
-                    .map(l => l.trim())
-                    .filter(l => l !== '');
+  const lines = text.split('\n').slice(1); // ヘッダ除去
 
-  data = [];
+  data = lines.map(line => {
 
-  // ✅ 5行1レコード
-  for (let i = 1; i < lines.length; i += 5) {
+    const c = line.split(',');
 
-    data.push({
-      code: lines[i],
-      name: lines[i+1],
-      spec: lines[i+2],
-      cereal: lines[i+3],
-      loc: lines[i+4]
-    });
+    return {
+      code: (c[0] || '').trim(),
+      name: (c[1] || '').trim(),
+      spec: (c[2] || '').replace(/"/g, '').trim(),
+      cereal: (c[3] || '').trim(),
+      loc: (c[4] || '').trim()
+    };
 
-  }
+  });
 
 });
 
+// ===== 検索 =====
 function searchParts() {
 
   const key = document.getElementById('keyword').value.trim().toLowerCase();
@@ -105,35 +104,32 @@ function searchParts() {
   const result = document.getElementById('result');
   result.innerHTML = '';
 
-  data
-    .filter(d => {
+  data.filter(d => {
 
-      const keyMatch =
-        !key ||
-        d.code.includes(key) ||
-        d.spec.toLowerCase().includes(key);
+    const keyMatch =
+      !key ||
+      d.code.includes(key) ||
+      d.spec.toLowerCase().includes(key);
 
-      const locMatch =
-        !loc ||
-        d.loc.includes(loc);
+    const locMatch =
+      !loc ||
+      d.loc.includes(loc);
 
-      return keyMatch && locMatch;
+    return keyMatch && locMatch;
 
-    })
-    .forEach(d => {
+  }).forEach(d => {
 
-      const div = document.createElement('div');
+    const div = document.createElement('div');
 
-      // ✅ 以前と同じ1行表示
-      div.textContent =
-        d.code + " " +
-        d.name + "（" +
-        d.spec + "） 保管：" +
-        d.loc;
+    div.textContent =
+      d.code + " " +
+      d.name + "（" +
+      d.spec + "） 保管：" +
+      d.loc;
 
-      result.appendChild(div);
+    result.appendChild(div);
 
-    });
+  });
 
 }
 
@@ -141,4 +137,3 @@ function searchParts() {
 
 </body>
 </html>
-``
