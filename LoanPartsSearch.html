@@ -44,10 +44,6 @@ button {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
 }
-
-.card div {
-  margin: 2px 0;
-}
 </style>
 </head>
 
@@ -70,27 +66,30 @@ button {
 <div id="result" class="result"></div>
 
 <script>
+
 let data = [];
 
-/* ===== CSV 読み込み（カンマ対策版） ===== */
+/* ===== CSV読み込み（6行1レコード対応） ===== */
 fetch('LoanParts.csv')
 .then(res => res.text())
 .then(text => {
 
-  const lines = text.split('\n').slice(1);
+  const lines = text.split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l !== '');
 
-  data = lines.map(line => {
+  // ★6行まとめて1件にする
+  for (let i = 1; i < lines.length; i += 6) {
 
-    // ✅ カンマ入り規格対応
-    const c = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-
-    return {
-      code: (c[0] || '').replace(/"/g,'').trim(),
-      name: (c[1] || '').replace(/"/g,'').trim(),
-      spec: (c[2] || '').replace(/"/g,'').trim(),
-      loc:  (c[5] || '').replace(/"/g,'').trim()
-    };
-  });
+    data.push({
+      code: lines[i] || '',
+      name: lines[i+1] || '',
+      spec: (lines[i+2] || '').replace(/"/g,''),
+      cereal: lines[i+3] || '',
+      note: lines[i+4] || '',
+      loc: lines[i+5] || ''
+    });
+  }
 
 });
 
@@ -106,13 +105,11 @@ function searchParts() {
   data
     .filter(d => {
 
-      /* ① キーワード（部品№ or 規格） */
       const keyMatch =
         !key ||
         d.code.includes(key) ||
         d.spec.toLowerCase().includes(key);
 
-      /* ② 場所（入力された時だけ効く） */
       const locMatch =
         !loc ||
         d.loc.includes(loc);
@@ -121,20 +118,22 @@ function searchParts() {
     })
     .forEach(d => {
 
-      const card = document.createElement('div');
-      card.className = 'card';
+      const div = document.createElement('div');
+      div.className = 'card';
 
-      card.innerHTML = `
-        <div><strong>${d.code}　${d.name}</strong></div>
-        <div>規格：${d.spec}</div>
-        <div>保管部署：${d.loc}</div>
+      div.innerHTML = `
+        <strong>${d.code}　${d.name}</strong><br>
+        規格：${d.spec}<br>
+        保管部署：${d.loc}
       `;
 
-      result.appendChild(card);
-    });
+      result.appendChild(div);
 
+    });
 }
+
 </script>
 
 </body>
 </html>
+``
