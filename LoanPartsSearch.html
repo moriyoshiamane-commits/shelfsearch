@@ -48,7 +48,7 @@ button {
   margin-top: 16px;
 }
 
-/* ✅ アフター検索と同じカード型 */
+/* ✅ アフター検索と同じカード表示 */
 .card {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
@@ -82,23 +82,24 @@ button {
 
 let data = [];
 
-/* ===== CSV読み込み ===== */
+/* ===== CSV読み込み（カンマ対応版） ===== */
 fetch('LoanParts.csv')
 .then(res => res.text())
 .then(text => {
 
-  const lines = text.split('\n').slice(1);
+  const lines = text.split('\n').slice(1); // ヘッダ除去
 
   data = lines.map(line => {
 
-    const c = line.split(',');
+    // ✅ 規格のカンマ対応
+    const c = line.match(/(".*?"|[^,]+)/g);
 
     return {
       code: (c[0] || '').trim(),
       name: (c[1] || '').trim(),
-      spec: (c[2] || '').replace(/"/g, '').trim(),
+      spec: (c[2] || '').replace(/"/g,'').trim(),
       cereal: (c[3] || '').trim(),
-      loc: (c[4] || '').trim()
+      loc: (c[c.length-1] || '').trim()
     };
 
   });
@@ -137,7 +138,7 @@ function searchParts() {
       card.innerHTML = `
         <div><strong>${d.code}　${d.name}</strong></div>
         <div>規格：${d.spec}</div>
-        <div>シリアル：${d.cereal}</div>
+        <div>シリアル：${d.cereal || ''}</div>
         <div>保管部署：${d.loc}</div>
       `;
 
