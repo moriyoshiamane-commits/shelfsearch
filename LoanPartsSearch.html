@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>貸出部品検索</title>
 
 <style>
@@ -12,50 +11,26 @@ body {
   margin: 10px;
 }
 
-h2 {
-  margin-bottom: 12px;
-}
-
-.search-box {
-  margin-bottom: 12px;
-}
-
-label {
-  display: block;
-  margin-bottom: 4px;
-}
+.search-box { margin-bottom: 10px; }
 
 input[type="text"] {
   width: 320px;
   height: 32px;
-  font-size: 14px;
-  padding: 4px 6px;
-  box-sizing: border-box;
 }
 
 button {
-  margin-top: 10px;
   padding: 8px 18px;
-  font-size: 14px;
-  color: #fff;
   background: linear-gradient(#5b8de3,#3f6ac7);
+  color: #fff;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
 }
 
-.result {
-  margin-top: 16px;
-}
+.result { margin-top: 15px; }
 
-/* ✅ アフター検索と同じカード表示 */
 .card {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
-}
-
-.card div {
-  margin: 2px 0;
 }
 </style>
 </head>
@@ -65,13 +40,13 @@ button {
 <h2>貸出部品検索</h2>
 
 <div class="search-box">
-  <label>部品№ / 規格</label>
-  <input type="text" id="keyword">
+<label>部品№ / 規格</label>
+<input type="text" id="keyword">
 </div>
 
 <div class="search-box">
-  <label>保管部署</label>
-  <input type="text" id="location" placeholder="例：大阪">
+<label>保管部署</label>
+<input type="text" id="location" placeholder="例：大阪">
 </div>
 
 <button onclick="searchParts()">検索</button>
@@ -82,24 +57,30 @@ button {
 
 let data = [];
 
-/* ===== CSV読み込み（カンマ対応版） ===== */
 fetch('LoanParts.csv')
 .then(res => res.text())
 .then(text => {
 
-  const lines = text.split('\n').slice(1); // ヘッダ除去
+  const lines = text.split('\n').slice(1);
 
   data = lines.map(line => {
 
-    // ✅ 規格のカンマ対応
-    const c = line.match(/(".*?"|[^,]+)/g);
+    // ✅ 一度シンプルに処理
+    const c = line.split(',');
+
+    // ✅ 規格のカンマ結合処理（ここがポイント）
+    let spec = c[2] || '';
+
+    if (c.length > 5) {
+      spec = c.slice(2, c.length - 2).join(',');
+    }
 
     return {
       code: (c[0] || '').trim(),
       name: (c[1] || '').trim(),
-      spec: (c[2] || '').replace(/"/g,'').trim(),
-      cereal: (c[3] || '').trim(),
-      loc: (c[c.length-1] || '').trim()
+      spec: spec.replace(/"/g,'').trim(),
+      cereal: (c[c.length - 2] || '').trim(),
+      loc: (c[c.length - 1] || '').trim()
     };
 
   });
@@ -111,40 +92,38 @@ function searchParts() {
 
   const key = document.getElementById('keyword').value.trim().toLowerCase();
   const loc = document.getElementById('location').value.trim();
-
   const result = document.getElementById('result');
+
   result.innerHTML = '';
 
-  data
-    .filter(d => {
+  data.filter(d => {
 
-      const keyMatch =
-        !key ||
-        d.code.includes(key) ||
-        d.spec.toLowerCase().includes(key);
+    const keyMatch =
+      !key ||
+      d.code.includes(key) ||
+      d.spec.toLowerCase().includes(key);
 
-      const locMatch =
-        !loc ||
-        d.loc.includes(loc);
+    const locMatch =
+      !loc ||
+      d.loc.includes(loc);
 
-      return keyMatch && locMatch;
+    return keyMatch && locMatch;
 
-    })
-    .forEach(d => {
+  }).forEach(d => {
 
-      const card = document.createElement('div');
-      card.className = 'card';
+    const card = document.createElement('div');
+    card.className = 'card';
 
-      card.innerHTML = `
-        <div><strong>${d.code}　${d.name}</strong></div>
-        <div>規格：${d.spec}</div>
-        <div>シリアル：${d.cereal || ''}</div>
-        <div>保管部署：${d.loc}</div>
-      `;
+    card.innerHTML = `
+      <div><strong>${d.code}　${d.name}</strong></div>
+      <div>規格：${d.spec}</div>
+      <div>シリアル：${d.cereal || ''}</div>
+      <div>保管部署：${d.loc}</div>
+    `;
 
-      result.appendChild(card);
+    result.appendChild(card);
 
-    });
+  });
 
 }
 
