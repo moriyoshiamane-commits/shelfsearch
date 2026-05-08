@@ -12,37 +12,40 @@ body {
   margin: 10px;
 }
 
-h2 { margin-bottom: 10px; }
+h2 {
+  margin-bottom: 10px;
+}
 
-.search-box { margin-bottom: 10px; }
+.search-box {
+  margin-bottom: 10px;
+}
 
-label { display: block; margin-bottom: 3px; }
+label {
+  display: block;
+  margin-bottom: 3px;
+}
 
 input[type="text"] {
   width: 320px;
   height: 32px;
   font-size: 14px;
-  padding: 4px 6px;
-  box-sizing: border-box;
 }
 
 button {
   padding: 8px 18px;
-  margin-top: 10px;
   background: linear-gradient(#5b8de3,#3f6ac7);
   color: #fff;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
 }
 
 .result {
   margin-top: 15px;
 }
 
-.card {
+.result div {
+  padding: 6px 0;
   border-bottom: 1px dotted #ccc;
-  padding: 8px 0;
 }
 </style>
 </head>
@@ -52,13 +55,13 @@ button {
 <h2>貸出部品検索</h2>
 
 <div class="search-box">
-  <label>部品№ / 規格</label>
-  <input type="text" id="keyword">
+<label>部品№ / 規格</label>
+<input type="text" id="keyword">
 </div>
 
 <div class="search-box">
-  <label>保管部署</label>
-  <input type="text" id="location" placeholder="例：大阪">
+<label>保管部署</label>
+<input type="text" id="location" placeholder="例：大阪">
 </div>
 
 <button onclick="searchParts()">検索</button>
@@ -69,7 +72,6 @@ button {
 
 let data = [];
 
-/* ===== CSV読み込み（6行1レコード対応） ===== */
 fetch('LoanParts.csv')
 .then(res => res.text())
 .then(text => {
@@ -78,22 +80,23 @@ fetch('LoanParts.csv')
                     .map(l => l.trim())
                     .filter(l => l !== '');
 
-  // ★6行まとめて1件にする
-  for (let i = 1; i < lines.length; i += 6) {
+  data = [];
+
+  // ✅ 5行1レコード
+  for (let i = 1; i < lines.length; i += 5) {
 
     data.push({
-      code: lines[i] || '',
-      name: lines[i+1] || '',
-      spec: (lines[i+2] || '').replace(/"/g,''),
-      cereal: lines[i+3] || '',
-      note: lines[i+4] || '',
-      loc: lines[i+5] || ''
+      code: lines[i],
+      name: lines[i+1],
+      spec: lines[i+2],
+      cereal: lines[i+3],
+      loc: lines[i+4]
     });
+
   }
 
 });
 
-/* ===== 検索処理 ===== */
 function searchParts() {
 
   const key = document.getElementById('keyword').value.trim().toLowerCase();
@@ -115,21 +118,23 @@ function searchParts() {
         d.loc.includes(loc);
 
       return keyMatch && locMatch;
+
     })
     .forEach(d => {
 
       const div = document.createElement('div');
-      div.className = 'card';
 
-      div.innerHTML = `
-        <strong>${d.code}　${d.name}</strong><br>
-        規格：${d.spec}<br>
-        保管部署：${d.loc}
-      `;
+      // ✅ 以前と同じ1行表示
+      div.textContent =
+        d.code + " " +
+        d.name + "（" +
+        d.spec + "） 保管：" +
+        d.loc;
 
       result.appendChild(div);
 
     });
+
 }
 
 </script>
