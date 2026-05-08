@@ -2,36 +2,68 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>貸出部品検索</title>
 
 <style>
+
+/* ✅ スマホ最適化（ここが重要） */
 body {
   font-family: sans-serif;
-  font-size: 14px;
-  margin: 10px;
+  font-size: 16px;
+  margin: 10px auto;
+  max-width: 500px;   /* ← スマホ幅に制限 */
 }
 
-.search-box { margin-bottom: 10px; }
+h2 {
+  margin-bottom: 12px;
+  font-size: 22px;     /* ← タイトル見やすく */
+}
 
+.search-box {
+  margin-bottom: 12px;
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ✅ 入力欄をスマホ幅いっぱい */
 input[type="text"] {
-  width: 320px;
-  height: 32px;
+  width: 100%;
+  height: 36px;
+  font-size: 16px;
+  padding: 4px 6px;
+  box-sizing: border-box;
 }
 
+/* ✅ ボタンも押しやすく */
 button {
-  padding: 8px 18px;
-  background: linear-gradient(#5b8de3,#3f6ac7);
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
   color: #fff;
+  background: linear-gradient(#5b8de3,#3f6ac7);
   border: none;
   border-radius: 6px;
 }
 
-.result { margin-top: 15px; }
+/* 結果 */
+.result {
+  margin-top: 16px;
+}
 
+/* ✅ カード形式（アフター検索と同じ） */
 .card {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
 }
+
+.card div {
+  margin: 3px 0;
+}
+
 </style>
 </head>
 
@@ -40,13 +72,15 @@ button {
 <h2>貸出部品検索</h2>
 
 <div class="search-box">
-<label>部品№ / 規格</label>
-<input type="text" id="keyword">
+  <label>部品№ / 規格</label>
+  <input type="text" id="keyword"
+         onkeydown="if(event.key==='Enter') searchParts();">
 </div>
 
 <div class="search-box">
-<label>保管部署</label>
-<input type="text" id="location" placeholder="例：大阪">
+  <label>保管部署</label>
+  <input type="text" id="location" placeholder="例：大阪"
+         onkeydown="if(event.key==='Enter') searchParts();">
 </div>
 
 <button onclick="searchParts()">検索</button>
@@ -57,6 +91,7 @@ button {
 
 let data = [];
 
+/* ===== CSV読み込み（安定版） ===== */
 fetch('LoanParts.csv')
 .then(res => res.text())
 .then(text => {
@@ -65,12 +100,10 @@ fetch('LoanParts.csv')
 
   data = lines.map(line => {
 
-    // ✅ 一度シンプルに処理
     const c = line.split(',');
 
-    // ✅ 規格のカンマ結合処理（ここがポイント）
+    // ✅ 規格のカンマ結合
     let spec = c[2] || '';
-
     if (c.length > 5) {
       spec = c.slice(2, c.length - 2).join(',');
     }
@@ -82,7 +115,6 @@ fetch('LoanParts.csv')
       cereal: (c[c.length - 2] || '').trim(),
       loc: (c[c.length - 1] || '').trim()
     };
-
   });
 
 });
@@ -117,7 +149,7 @@ function searchParts() {
     card.innerHTML = `
       <div><strong>${d.code}　${d.name}</strong></div>
       <div>規格：${d.spec}</div>
-      <div>シリアル：${d.cereal || ''}</div>
+      ${d.cereal ? `<div>シリアル：${d.cereal}</div>` : ''}
       <div>保管部署：${d.loc}</div>
     `;
 
@@ -131,3 +163,4 @@ function searchParts() {
 
 </body>
 </html>
+``
