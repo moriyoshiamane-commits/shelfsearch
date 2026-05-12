@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>アフター対応検索</title>
+<title>客先検索</title>
 
 <style>
 body {
@@ -56,31 +56,16 @@ button {
 
 <body>
 
-<h2>アフター対応検索</h2>
+<h2>客先検索</h2>
 
 <div class="search-box">
 <label>客先名（部分一致）</label>
-<input id="name" placeholder="例：スター精機 大阪">
+<input id="name" placeholder="例：東芝機械 富山">
 </div>
 
 <div class="search-box">
 <label>電話番号（部分一致）</label>
-<input id="tel" placeholder="例：0532656480">
-</div>
-
-<div class="search-box">
-<label>機種名称（部分一致）</label>
-<input id="model" placeholder="例：GX-1100">
-</div>
-
-<div class="search-box">
-<label>機械№（部分一致）</label>
-<input id="machine" placeholder="例：GX11N-">
-</div>
-
-<div class="search-box">
-<label>BOX名（部分一致）</label>
-<input id="box" placeholder="例：STEC-360">
+<input id="tel" placeholder="例：076492">
 </div>
 
 <button onclick="search()">検索</button>
@@ -93,8 +78,8 @@ let data = [];
 
 const version = "2026-05";
 
-/* ✅ CSV読み込み（指定POP順対応） */
-fetch('OTHER.csv?v=' + version)
+/* ✅ CSV読み込み（現状CSVに完全一致） */
+fetch('Customer.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
 
@@ -104,13 +89,14 @@ fetch('OTHER.csv?v=' + version)
 
     const c = line.split(',');
 
-    const no    = (c.pop() || '').trim();
-    const name  = (c.pop() || '').trim();
-    const tel   = (c.pop() || '').trim();
-    const fax   = (c.pop() || '').trim();
-    const area  = (c.pop() || '').trim();
-    const addr  = (c.pop() || '').trim();
-    const zip   = (c.pop() || '').trim();
+    /* ✅ CSVの右から取得（重要） */
+    const addr  = (c.pop() || '').trim();  // 住所
+    const zip   = (c.pop() || '').trim();  // 郵便
+    const area  = (c.pop() || '').trim();  // 地区
+    const fax   = (c.pop() || '').trim();  // FAX
+    const tel   = (c.pop() || '').trim();  // TEL
+    const name  = (c.pop() || '').trim();  // 会社名
+    const no    = (c.pop() || '').trim();  // 客先No
 
     return {
       no,
@@ -143,9 +129,6 @@ function search() {
 
   const name = document.getElementById('name').value;
   const tel = document.getElementById('tel').value;
-  const model = document.getElementById('model').value.toLowerCase();
-  const machine = document.getElementById('machine').value.toLowerCase();
-  const box = document.getElementById('box').value.toLowerCase();
 
   const result = document.getElementById('result');
   result.innerHTML = '';
@@ -170,7 +153,8 @@ function search() {
 
       <div>
         住所：
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_blank    </a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_
+        </a>
       </div>
 
       <div>電話：${d.tel}</div>
