@@ -10,7 +10,6 @@ body {
   font-family: sans-serif;
   font-size: 16px;
   margin: 10px;
-  max-width: none;
 }
 
 h2 {
@@ -51,8 +50,8 @@ button {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
 }
-
 </style>
+
 </head>
 
 <body>
@@ -61,27 +60,27 @@ button {
 
 <div class="search-box">
 <label>客先名（部分一致）</label>
-<input id="name">
+<input id="name" placeholder="例：スター精機 大阪">
 </div>
 
 <div class="search-box">
 <label>電話番号（部分一致）</label>
-<input id="tel">
+<input id="tel" placeholder="例：077123">
 </div>
 
 <div class="search-box">
 <label>機種名称（部分一致）</label>
-<input id="model">
+<input id="model" placeholder="例：GX-1100">
 </div>
 
 <div class="search-box">
 <label>機械№（部分一致）</label>
-<input id="machine">
+<input id="machine" placeholder="例：GX11N-">
 </div>
 
 <div class="search-box">
 <label>BOX名（部分一致）</label>
-<input id="box">
+<input id="box" placeholder="例：STEC-360">
 </div>
 
 <button onclick="search()">検索</button>
@@ -92,23 +91,63 @@ button {
 
 let data = [];
 
-/* ✅ 月次バージョン（ここだけ毎月変更） */
+/* ✅ 月次バージョン（毎月変更） */
 const version = "2026-05";
 
-/* ✅ CSV読み込み（キャッシュ対策済） */
+/* ✅ CSV読み込み（後ろから固定取得） */
 fetch('OTHER.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
 
   const lines = text.split('\n').slice(1);
 
-  data = lines.map(line => line.split(','));
+  data = lines.map(line => {
+
+    const c = line.split(',');
+
+    // ✅ 後ろから固定取得（ズレ防止）
+    const tel   = (c.pop() || '').trim();
+    const zip   = (c.pop() || '').trim();
+    const addr  = (c.pop() || '').trim();
+    const box   = (c.pop() || '').trim();
+    const machine = (c.pop() || '').trim();
+    const modelName = (c.pop() || '').trim();
+    const model = (c.pop() || '').trim();
+    const name  = (c.pop() || '').trim();
+    const no    = (c.pop() || '').trim();
+
+    return {
+      no,
+      name,
+      model,
+      modelName,
+      machine,
+      box,
+      addr,
+      zip,
+      tel
+    };
+
+  });
 
   console.log("読み込み件数:", data.length);
 
 });
 
-/* ✅ 検索処理 */
+
+/* ✅ AND検索（スペース区切り） */
+function matchWords(text, input) {
+
+  if (!input) return true;
+
+  // 全角スペース対応
+  const words = input.trim().replace(/\u3000/g, ' ').split(' ').filter(w => w);
+
+  return words.every(w => text.includes(w));
+}
+
+
+/* ✅ 検索 */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -122,11 +161,11 @@ function search() {
 
   data.filter(d => {
 
-    return (!name || (d[0] || '').includes(name)) &&
-           (!tel || (d[1] || '').includes(tel)) &&
-           (!model || (d[2] || '').toLowerCase().includes(model)) &&
-           (!machine || (d[3] || '').toLowerCase().includes(machine)) &&
-           (!box || (d[4] || '').toLowerCase().includes(box));
+    return matchWords(d.name, name) &&
+           matchWords(d.tel, tel) &&
+           matchWords(d.model.toLowerCase(), model) &&
+           matchWords(d.machine.toLowerCase(), machine) &&
+           matchWords(d.box.toLowerCase(), box);
 
   }).forEach(d => {
 
@@ -134,11 +173,11 @@ function search() {
     card.className = 'card';
 
     card.innerHTML = `
-      <div><strong>${d[0] || ''}</strong></div>
-      <div>電話：${d[1] || ''}</div>
-      <div>機種：${d[2] || ''}</div>
-      <div>機械№：${d[3] || ''}</div>
-      <div>BOX：${d[4] || ''}</div>
+      <div><strong>${d.name}</strong></div>
+      <div>電話：${d.tel}</div>
+      <div>機種：${d.model}</div>
+      <div>機械№：${d.machine}</div>
+      <div>BOX：${d.box}</div>
     `;
 
     result.appendChild(card);
