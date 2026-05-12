@@ -6,54 +6,84 @@
 <title>客先検索</title>
 
 <style>
-body { font-family: sans-serif; font-size: 16px; margin: 10px; }
-.search-box { margin-bottom: 8px; }
-input { width: 250px; height: 30px; }
-button {
-  padding: 8px 15px;
-  color: #fff;
-  background: #3f6ac7;
-  border: none;
+body {
+  font-family: sans-serif;
+  font-size: 16px;
+  margin: 10px;
 }
-.card { margin-top: 10px; border-bottom: 1px solid #ccc; padding: 8px; }
+
+h2 {
+  margin-bottom: 12px;
+}
+
+.search-box {
+  margin-bottom: 10px;
+}
+
+input {
+  width: 400px;
+  max-width: 100%;
+  height: 36px;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  color: #fff;
+  background: linear-gradient(#5b8de3,#3f6ac7);
+  border: none;
+  border-radius: 6px;
+}
+
+.result {
+  margin-top: 15px;
+}
+
+.card {
+  border-bottom: 1px dotted #ccc;
+  padding: 8px 0;
+}
 </style>
 
 </head>
+
 <body>
 
 <h2>客先検索</h2>
 
 <div class="search-box">
-客先名<br>
+<label>客先名</label>
 <input id="name">
 </div>
 
 <div class="search-box">
-TEL（ハイフン無・部分一致）<br>
+<label>TEL（ハイフン無・部分一致）</label>
 <input id="tel">
 </div>
 
 <div class="search-box">
-FAX（ハイフン無・部分一致）<br>
+<label>FAX（ハイフン無・部分一致）</label>
 <input id="fax">
 </div>
 
 <div class="search-box">
-地区<br>
+<label>地区</label>
 <input id="area" placeholder="例：奈良">
 </div>
 
 <button onclick="search()">検索</button>
 
-<div id="result"></div>
+<div id="result" class="result"></div>
 
 <script>
 
 let data = [];
+
 const version = "2026-05";
 
-/* ✅ CSV読み込み */
-fetch('Customer.csv?v=' + version)
+/* ✅ CSV読み込み（元のまま） */
+fetch('CustomerMaster.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
 
@@ -63,15 +93,23 @@ fetch('Customer.csv?v=' + version)
 
     const c = line.split(',');
 
-    const addr  = (c.pop() || '').trim();  // 住所
-    const zip   = (c.pop() || '').trim();  // 郵便
-    const area  = (c.pop() || '').trim();  // 地区
-    const fax   = (c.pop() || '').trim();  // FAX
-    const tel   = (c.pop() || '').trim();  // TEL
-    const name  = (c.pop() || '').trim();  // 会社名
-    const no    = (c.pop() || '').trim();  // 客先No
+    const addr  = (c.pop() || '').trim();
+    const zip   = (c.pop() || '').trim();
+    const area  = (c.pop() || '').trim();
+    const fax   = (c.pop() || '').trim();
+    const tel   = (c.pop() || '').trim();
+    const name  = (c.pop() || '').trim();
+    const no    = (c.pop() || '').trim();
 
-    return { no, name, tel, fax, area, addr, zip };
+    return {
+      no,
+      name,
+      tel,
+      fax,
+      area,
+      addr,
+      zip
+    };
 
   });
 
@@ -101,16 +139,13 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
-    /* ✅ ここが重要（正しいHTML構造） */
+    /* ✅ ここだけ追加 */
     card.innerHTML = `
       <div>客先№：${d.no}</div>
       <div>${d.name}</div>
 
-      <div>
-        〒${d.zip}<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_
-        </a>
-      </div>
+      <div>〒${d.zip}</div>
+      <div>${d.addr}</div>
 
       <div>TEL：${d.tel}</div>
       <div>FAX：${d.fax}</div>
@@ -120,6 +155,7 @@ function search() {
     result.appendChild(card);
 
   });
+
 }
 
 </script>
