@@ -6,79 +6,48 @@
 <title>客先検索</title>
 
 <style>
-body {
-  font-family: sans-serif;
-  font-size: 16px;
-  margin: 10px;
-}
-
-h2 {
-  margin-bottom: 12px;
-}
-
-.search-box {
-  margin-bottom: 10px;
-  max-width: 420px;
-}
-
-label {
-  display: block;
-  margin-bottom: 3px;
-}
-
-input {
-  width: 400px;
-  max-width: 100%;
-  height: 36px;
-  font-size: 16px;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  color: #fff;
-  background: linear-gradient(#5b8de3,#3f6ac7);
-  border: none;
-  border-radius: 6px;
-}
-
-.result {
-  margin-top: 15px;
-}
-
-.card {
-  border-bottom: 1px dotted #ccc;
-  padding: 8px 0;
-}
+body { font-family: sans-serif; font-size: 16px; margin: 10px; }
+.search-box { margin-bottom: 8px; }
+input { width: 250px; height: 30px; }
+button { padding: 8px 15px; }
+.card { margin-top: 10px; border-bottom: 1px solid #ccc; padding: 8px; }
 </style>
 
 </head>
-
 <body>
 
 <h2>客先検索</h2>
 
 <div class="search-box">
-<label>客先名（部分一致）</label>
-<input id="name" placeholder="例：東芝機械 富山">
+客先名<br>
+<input id="name">
 </div>
 
 <div class="search-box">
-<label>電話番号（部分一致）</label>
-<input id="tel" placeholder="例：076492">
+TEL（ハイフン無・部分一致）<br>
+<input id="tel">
+</div>
+
+<div class="search-box">
+FAX（ハイフン無・部分一致）<br>
+<input id="fax">
+</div>
+
+<div class="search-box">
+地区<br>
+<input id="area" placeholder="例：奈良">
 </div>
 
 <button onclick="search()">検索</button>
 
-<div id="result" class="result"></div>
+<div id="result"></div>
 
 <script>
 
 let data = [];
-
 const version = "2026-05";
 
-/* ✅ CSV読み込み（現状CSVに完全一致） */
+/* ✅ CSV読み込み（今の列順そのまま） */
 fetch('Customer.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -89,7 +58,7 @@ fetch('Customer.csv?v=' + version)
 
     const c = line.split(',');
 
-    /* ✅ CSVの右から取得（重要） */
+    /* ✅ CSV右から順（重要） */
     const addr  = (c.pop() || '').trim();  // 住所
     const zip   = (c.pop() || '').trim();  // 郵便
     const area  = (c.pop() || '').trim();  // 地区
@@ -98,16 +67,7 @@ fetch('Customer.csv?v=' + version)
     const name  = (c.pop() || '').trim();  // 会社名
     const no    = (c.pop() || '').trim();  // 客先No
 
-    return {
-      no,
-      name,
-      tel,
-      fax,
-      area,
-      addr,
-      zip
-    };
-
+    return { no, name, tel, fax, area, addr, zip };
   });
 
 });
@@ -115,20 +75,19 @@ fetch('Customer.csv?v=' + version)
 
 /* ✅ AND検索 */
 function matchWords(text, input) {
-
   if (!input) return true;
-
   const words = input.trim().replace(/\u3000/g, ' ').split(' ').filter(w => w);
-
   return words.every(w => text.includes(w));
 }
 
 
-/* ✅ 検索 */
+/* ✅ 検索（元仕様完全維持） */
 function search() {
 
   const name = document.getElementById('name').value;
   const tel = document.getElementById('tel').value;
+  const fax = document.getElementById('fax').value;
+  const area = document.getElementById('area').value;
 
   const result = document.getElementById('result');
   result.innerHTML = '';
@@ -140,31 +99,37 @@ function search() {
            matchWords(
              d.tel.replace(/-/g, ''),
              tel.replace(/-/g, '')
-           );
+           ) &&
+
+           matchWords(
+             d.fax.replace(/-/g, ''),
+             fax.replace(/-/g, '')
+           ) &&
+
+           matchWords(d.area, area);
 
   }).forEach(d => {
 
     const card = document.createElement('div');
     card.className = 'card';
 
+    /* ✅ ここだけ追加（住所表示＋Mapリンク） */
     card.innerHTML = `
-      <div><strong>客先№：${d.no}</strong></div>
+      <div>客先№：${d.no}</div>
       <div>${d.name}</div>
 
       <div>
         住所：
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_
-        </a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_blank    </a>
       </div>
 
-      <div>電話：${d.tel}</div>
+      <div>TEL：${d.tel}</div>
+      <div>FAX：${d.fax}</div>
       <div>地区：${d.area}</div>
     `;
 
     result.appendChild(card);
-
   });
-
 }
 
 </script>
