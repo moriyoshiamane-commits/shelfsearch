@@ -65,7 +65,7 @@ button {
 
 <div class="search-box">
 <label>電話番号（部分一致）</label>
-<input id="tel" placeholder="例：077123">
+<input id="tel" placeholder="例：0532656480">
 </div>
 
 <div class="search-box">
@@ -158,7 +158,13 @@ function search() {
   data.filter(d => {
 
     return matchWords(d.name, name) &&
-           matchWords(d.tel, tel) &&
+
+           /* ✅ 電話番号（ハイフン無視） */
+           matchWords(
+             d.tel.replace(/-/g, ''),
+             tel.replace(/-/g, '')
+           ) &&
+
            matchWords(d.model.toLowerCase(), model) &&
            matchWords(d.machine.toLowerCase(), machine) &&
            matchWords(d.box.toLowerCase(), box);
@@ -188,4 +194,3 @@ function search() {
 
 </body>
 </html>
-``
