@@ -2,13 +2,13 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>客先検索</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>アフター対応検索</title>
 
 <style>
 body {
   font-family: sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   margin: 10px;
 }
 
@@ -17,136 +17,173 @@ h2 {
 }
 
 .search-box {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  max-width: 420px;
 }
 
 label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
-input[type="text"] {
-  width: 320px;
-  height: 32px;
-  font-size: 14px;
-  padding: 4px 6px;
-  box-sizing: border-box;
+input {
+  width: 400px;
+  max-width: 100%;
+  height: 36px;
+  font-size: 16px;
 }
 
-input[type="button"] {
-  margin-top: 14px;
-  padding: 8px 18px;
-  font-size: 14px;
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
   color: #fff;
-  background: linear-gradient(#5b8de3, #3f6ac7);
+  background: linear-gradient(#5b8de3,#3f6ac7);
   border: none;
   border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  cursor: pointer;
 }
 
 .result {
-  margin-top: 16px;
+  margin-top: 15px;
 }
 
 .card {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
 }
-
-.card div {
-  margin: 2px 0;
-}
 </style>
+
 </head>
 
 <body>
 
-<h2>客先検索</h2>
+<h2>アフター対応検索</h2>
 
 <div class="search-box">
-  <label>客先名</label>
-  <input type="text" id="nameSearch">
+<label>客先名（部分一致）</label>
+<input id="name" placeholder="例：スター精機 大阪">
 </div>
 
 <div class="search-box">
-  <label>TEL（ハイフン無・部分一致）</label>
-  <input type="text" id="telSearch">
+<label>電話番号（部分一致）</label>
+<input id="tel" placeholder="例：0532656480">
 </div>
 
 <div class="search-box">
-  <label>FAX（ハイフン無・部分一致）</label>
-  <input type="text" id="faxSearch">
+<label>機種名称（部分一致）</label>
+<input id="model" placeholder="例：GX-1100">
 </div>
 
 <div class="search-box">
-  <label>地区</label>
-  <input type="text" id="areaSearch" placeholder="例：奈良">
+<label>機械№（部分一致）</label>
+<input id="machine" placeholder="例：GX11N-">
 </div>
 
-<input type="button" value="検索" onclick="searchCustomer()">
+<div class="search-box">
+<label>BOX名（部分一致）</label>
+<input id="box" placeholder="例：STEC-360">
+</div>
+
+<button onclick="search()">検索</button>
 
 <div id="result" class="result"></div>
 
 <script>
-let customerMaster = [];
 
-/* ===== CustomerMaster.csv 読み込み =====
-   実際の列順：
-   0:客先№
-   1:客先名
-   2:TEL
-   3:FAX
-   4:地区
-====================================== */
-fetch('CustomerMaster.csv')
-  .then(res => res.text())
-  .then(text => {
-    const lines = text.split('\n').slice(1);
-    customerMaster = lines.map(l => {
-      const c = l.split(',');
-      return {
-        code: (c[0] || '').trim(),
-        name: (c[1] || '').trim(),
-        tel:  (c[2] || '').trim(),
-        fax:  (c[3] || '').trim(),
-        area: (c[4] || '').trim()
-      };
-    });
+let data = [];
+
+const version = "2026-05";
+
+/* ✅ CSV読み込み（指定POP順対応） */
+fetch('OTHER.csv?v=' + version)
+.then(res => res.text())
+.then(text => {
+
+  const lines = text.split('\n').slice(1);
+
+  data = lines.map(line => {
+
+    const c = line.split(',');
+
+    const no    = (c.pop() || '').trim();
+    const name  = (c.pop() || '').trim();
+    const tel   = (c.pop() || '').trim();
+    const fax   = (c.pop() || '').trim();
+    const area  = (c.pop() || '').trim();
+    const addr  = (c.pop() || '').trim();
+    const zip   = (c.pop() || '').trim();
+
+    return {
+      no,
+      name,
+      tel,
+      fax,
+      area,
+      addr,
+      zip
+    };
+
   });
 
-function searchCustomer() {
-  const nameKey = document.getElementById('nameSearch').value.trim().toLowerCase();
-  const areaKey = document.getElementById('areaSearch').value.trim().toLowerCase();
-  const telKey  = document.getElementById('telSearch').value.trim().replace(/-/g,'');
-  const faxKey  = document.getElementById('faxSearch').value.trim().replace(/-/g,'');
+});
+
+
+/* ✅ AND検索 */
+function matchWords(text, input) {
+
+  if (!input) return true;
+
+  const words = input.trim().replace(/\u3000/g, ' ').split(' ').filter(w => w);
+
+  return words.every(w => text.includes(w));
+}
+
+
+/* ✅ 検索 */
+function search() {
+
+  const name = document.getElementById('name').value;
+  const tel = document.getElementById('tel').value;
+  const model = document.getElementById('model').value.toLowerCase();
+  const machine = document.getElementById('machine').value.toLowerCase();
+  const box = document.getElementById('box').value.toLowerCase();
 
   const result = document.getElementById('result');
   result.innerHTML = '';
 
-  customerMaster.filter(c => {
-    const tel = c.tel.replace(/-/g,'');
-    const fax = c.fax.replace(/-/g,'');
-    return (
-      (!nameKey || c.name.toLowerCase().includes(nameKey)) &&
-      (!areaKey || c.area.toLowerCase().includes(areaKey)) &&
-      (!telKey  || tel.includes(telKey)) &&
-      (!faxKey  || fax.includes(faxKey))
-    );
-  }).forEach(c => {
+  data.filter(d => {
+
+    return matchWords(d.name, name) &&
+
+           matchWords(
+             d.tel.replace(/-/g, ''),
+             tel.replace(/-/g, '')
+           );
+
+  }).forEach(d => {
+
     const card = document.createElement('div');
     card.className = 'card';
+
     card.innerHTML = `
-      <div><strong>${c.code}　${c.name}</strong></div>
-      <div>地区：${c.area}</div>
-      <div>TEL：${c.tel}</div>
-      <div>FAX：${c.fax}</div>
+      <div><strong>客先№：${d.no}</strong></div>
+      <div>${d.name}</div>
+
+      <div>
+        住所：
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_blank    </a>
+      </div>
+
+      <div>電話：${d.tel}</div>
+      <div>地区：${d.area}</div>
     `;
+
     result.appendChild(card);
+
   });
+
 }
+
 </script>
 
 </body>
 </html>
-``
