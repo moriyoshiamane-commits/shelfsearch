@@ -25,7 +25,6 @@ label {
   margin-bottom: 3px;
 }
 
-/* ✅ ←これ追加（縦並びに戻す） */
 input {
   display: block;
   width: 400px;
@@ -61,7 +60,7 @@ button {
 
 <div class="search-box">
 <label>客先名</label>
-<input id="name">
+<input id="name" placeholder="例：スター精機 大阪">
 </div>
 
 <div class="search-box">
@@ -123,7 +122,17 @@ fetch('CustomerMaster.csv?v=' + version)
 });
 
 
-/* ✅ 検索（変更なし） */
+/* ✅ 追加：スペースAND検索（客先名のみ使用） */
+function splitMatch(text, input) {
+  if (!input) return true;
+
+  const words = input.replace(/\u3000/g, ' ').split(' ').filter(w => w);
+
+  return words.every(w => text.includes(w));
+}
+
+
+/* ✅ 検索（客先名のみ変更、それ以外はそのまま） */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -136,7 +145,8 @@ function search() {
 
   data.filter(d => {
 
-    return (!name || d.name.includes(name)) &&
+    return (!name || splitMatch(d.name, name)) &&
+
            (!tel || d.tel.replace(/-/g, '').includes(tel.replace(/-/g, ''))) &&
            (!fax || d.fax.replace(/-/g, '').includes(fax.replace(/-/g, ''))) &&
            (!area || d.area.includes(area));
@@ -146,7 +156,6 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
-    /* ✅ 追加した表示（そのまま維持） */
     card.innerHTML = `
       <div>客先№：${d.no}</div>
       <div>${d.name}</div>
