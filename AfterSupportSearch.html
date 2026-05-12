@@ -150,6 +150,8 @@ function matchWords(text, input) {
 /* ✅ 検索 */
 function search() {
 
+  countAccess("after_search");  // ←ここに追加（완璧）
+  
   const name = document.getElementById('name').value;
   const tel = document.getElementById('tel').value;
   const model = document.getElementById('model').value.toLowerCase();
