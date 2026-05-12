@@ -47,7 +47,7 @@ FAX（ハイフン無・部分一致）<br>
 let data = [];
 const version = "2026-05";
 
-/* ✅ CSV読み込み（今の列順そのまま） */
+/* ✅ CSV読み込み（順序変更なし） */
 fetch('Customer.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -58,7 +58,7 @@ fetch('Customer.csv?v=' + version)
 
     const c = line.split(',');
 
-    /* ✅ CSV右から順（重要） */
+    /* ✅ CSVの右から取得（現状そのまま） */
     const addr  = (c.pop() || '').trim();  // 住所
     const zip   = (c.pop() || '').trim();  // 郵便
     const area  = (c.pop() || '').trim();  // 地区
@@ -68,20 +68,13 @@ fetch('Customer.csv?v=' + version)
     const no    = (c.pop() || '').trim();  // 客先No
 
     return { no, name, tel, fax, area, addr, zip };
+
   });
 
 });
 
 
-/* ✅ AND検索 */
-function matchWords(text, input) {
-  if (!input) return true;
-  const words = input.trim().replace(/\u3000/g, ' ').split(' ').filter(w => w);
-  return words.every(w => text.includes(w));
-}
-
-
-/* ✅ 検索（元仕様完全維持） */
+/* ✅ 検索（元のロジックそのまま） */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -94,32 +87,26 @@ function search() {
 
   data.filter(d => {
 
-    return matchWords(d.name, name) &&
+    return (!name || d.name.includes(name)) &&
 
-           matchWords(
-             d.tel.replace(/-/g, ''),
-             tel.replace(/-/g, '')
-           ) &&
+           (!tel || d.tel.replace(/-/g, '').includes(tel.replace(/-/g, ''))) &&
 
-           matchWords(
-             d.fax.replace(/-/g, ''),
-             fax.replace(/-/g, '')
-           ) &&
+           (!fax || d.fax.replace(/-/g, '').includes(fax.replace(/-/g, ''))) &&
 
-           matchWords(d.area, area);
+           (!area || d.area.includes(area));
 
   }).forEach(d => {
 
     const card = document.createElement('div');
     card.className = 'card';
 
-    /* ✅ ここだけ追加（住所表示＋Mapリンク） */
+    /* ✅ ここだけ追加（郵便番号＋住所） */
     card.innerHTML = `
       <div>客先№：${d.no}</div>
       <div>${d.name}</div>
 
       <div>
-        住所：
+        〒${d.zip}<br>
         <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_blank    </a>
       </div>
 
