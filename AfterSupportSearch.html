@@ -94,7 +94,7 @@ let data = [];
 /* ✅ 月次バージョン（毎月変更） */
 const version = "2026-05";
 
-/* ✅ CSV読み込み（後ろから固定取得） */
+/* ✅ CSV読み込み（後ろから取得） */
 fetch('OTHER.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -105,7 +105,6 @@ fetch('OTHER.csv?v=' + version)
 
     const c = line.split(',');
 
-    // ✅ 後ろから固定取得（ズレ防止）
     const tel   = (c.pop() || '').trim();
     const zip   = (c.pop() || '').trim();
     const addr  = (c.pop() || '').trim();
@@ -135,12 +134,11 @@ fetch('OTHER.csv?v=' + version)
 });
 
 
-/* ✅ AND検索（スペース区切り） */
+/* ✅ AND検索（スペース対応） */
 function matchWords(text, input) {
 
   if (!input) return true;
 
-  // 全角スペース対応
   const words = input.trim().replace(/\u3000/g, ' ').split(' ').filter(w => w);
 
   return words.every(w => text.includes(w));
@@ -150,8 +148,6 @@ function matchWords(text, input) {
 /* ✅ 検索 */
 function search() {
 
-  countAccess("after_search");  // ←ここに追加（완璧）
-  
   const name = document.getElementById('name').value;
   const tel = document.getElementById('tel').value;
   const model = document.getElementById('model').value.toLowerCase();
