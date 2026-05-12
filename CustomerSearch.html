@@ -9,7 +9,12 @@
 body { font-family: sans-serif; font-size: 16px; margin: 10px; }
 .search-box { margin-bottom: 8px; }
 input { width: 250px; height: 30px; }
-button { padding: 8px 15px; }
+button {
+  padding: 8px 15px;
+  color: #fff;
+  background: #3f6ac7;
+  border: none;
+}
 .card { margin-top: 10px; border-bottom: 1px solid #ccc; padding: 8px; }
 </style>
 
@@ -47,7 +52,7 @@ FAX（ハイフン無・部分一致）<br>
 let data = [];
 const version = "2026-05";
 
-/* ✅ CSV読み込み（順序変更なし） */
+/* ✅ CSV読み込み */
 fetch('Customer.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -58,7 +63,6 @@ fetch('Customer.csv?v=' + version)
 
     const c = line.split(',');
 
-    /* ✅ CSVの右から取得（現状そのまま） */
     const addr  = (c.pop() || '').trim();  // 住所
     const zip   = (c.pop() || '').trim();  // 郵便
     const area  = (c.pop() || '').trim();  // 地区
@@ -74,7 +78,7 @@ fetch('Customer.csv?v=' + version)
 });
 
 
-/* ✅ 検索（元のロジックそのまま） */
+/* ✅ 検索（元のまま） */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -88,11 +92,8 @@ function search() {
   data.filter(d => {
 
     return (!name || d.name.includes(name)) &&
-
            (!tel || d.tel.replace(/-/g, '').includes(tel.replace(/-/g, ''))) &&
-
            (!fax || d.fax.replace(/-/g, '').includes(fax.replace(/-/g, ''))) &&
-
            (!area || d.area.includes(area));
 
   }).forEach(d => {
@@ -100,14 +101,15 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
-    /* ✅ ここだけ追加（郵便番号＋住所） */
+    /* ✅ ここが重要（正しいHTML構造） */
     card.innerHTML = `
       <div>客先№：${d.no}</div>
       <div>${d.name}</div>
 
       <div>
         〒${d.zip}<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_blank    </a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_
+        </a>
       </div>
 
       <div>TEL：${d.tel}</div>
@@ -116,6 +118,7 @@ function search() {
     `;
 
     result.appendChild(card);
+
   });
 }
 
