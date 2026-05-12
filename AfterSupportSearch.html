@@ -91,10 +91,10 @@ button {
 
 let data = [];
 
-/* ✅ 月次バージョン（毎月変更） */
+/* ✅ 月次バージョン */
 const version = "2026-05";
 
-/* ✅ CSV読み込み（後ろから取得） */
+/* ✅ CSV読み込み（後ろから安定取得） */
 fetch('OTHER.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -128,8 +128,6 @@ fetch('OTHER.csv?v=' + version)
     };
 
   });
-
-  console.log("読み込み件数:", data.length);
 
 });
 
@@ -170,8 +168,10 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
+    /* ✅ 客先№を一番上に表示 */
     card.innerHTML = `
-      <div><strong>${d.name}</strong></div>
+      <div><strong>客先№：${d.no}</strong></div>
+      <div>${d.name}</div>
       <div>電話：${d.tel}</div>
       <div>機種：${d.model}</div>
       <div>機械№：${d.machine}</div>
@@ -188,3 +188,4 @@ function search() {
 
 </body>
 </html>
+``
