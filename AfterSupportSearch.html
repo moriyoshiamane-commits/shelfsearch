@@ -91,10 +91,9 @@ button {
 
 let data = [];
 
-/* ✅ 月次バージョン */
 const version = "2026-05";
 
-/* ✅ CSV読み込み（ここだけ変更：列固定方式） */
+/* ✅ CSV読み込み（列固定方式・そのまま） */
 fetch('OTHER.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -105,15 +104,14 @@ fetch('OTHER.csv?v=' + version)
 
     const c = line.split(',');
 
-    /* ✅ 列固定（ズレない） */
     const no        = (c[0] || '').trim();
     const name      = (c[1] || '').trim();
     const model     = (c[2] || '').trim();
     const modelName = (c[3] || '').trim();
     const machine   = (c[4] || '').trim();
     const box       = (c[5] || '').trim();
-    const addr      = (c[6] || '').trim();
-    const zip       = (c[7] || '').trim();
+    const addr      = (c[6] || '').trim();   // ※表示しない
+    const zip       = (c[7] || '').trim();   // ※表示しない
     const tel       = (c[8] || '').trim();
 
     return {
@@ -144,7 +142,7 @@ function matchWords(text, input) {
 }
 
 
-/* ✅ 検索（そのまま） */
+/* ✅ 検索（完全に変更なし） */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -160,7 +158,7 @@ function search() {
 
     return matchWords(d.name, name) &&
            matchWords(d.tel.replace(/-/g, ''), tel.replace(/-/g, '')) &&
-           matchWords(d.model.toLowerCase(), model) &&
+           matchWords(d.modelName.toLowerCase(), model) &&
            matchWords(d.machine.toLowerCase(), machine) &&
            matchWords(d.box.toLowerCase(), box);
 
@@ -169,11 +167,13 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
+    /* ✅ 機種名称を追加（ここだけ変更） */
     card.innerHTML = `
       <div><strong>客先№：${d.no}</strong></div>
       <div>${d.name}</div>
       <div>電話：${d.tel}</div>
       <div>機種：${d.model}</div>
+      <div>機種名称：${d.modelName}</div>
       <div>機械№：${d.machine}</div>
       <div>BOX：${d.box}</div>
     `;
@@ -188,4 +188,3 @@ function search() {
 
 </body>
 </html>
-``
