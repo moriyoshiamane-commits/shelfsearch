@@ -12,6 +12,10 @@ body {
   margin: 10px;
 }
 
+h2 {
+  margin-bottom: 12px;
+}
+
 .search-box {
   margin-bottom: 10px;
 }
@@ -38,8 +42,11 @@ button {
   border-radius: 6px;
 }
 
+.result {
+  margin-top: 15px;
+}
+
 .card {
-  margin-top: 10px;
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
 }
@@ -73,7 +80,7 @@ button {
 
 <button onclick="search()">検索</button>
 
-<div id="result"></div>
+<div id="result" class="result"></div>
 
 <script>
 
@@ -81,7 +88,7 @@ let data = [];
 
 const version = "2026-05";
 
-/* ✅ 元のCSV読み込みそのまま */
+/* ✅ CSV読み込み（変更なし） */
 fetch('CustomerMaster.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -100,22 +107,32 @@ fetch('CustomerMaster.csv?v=' + version)
     const name  = (c.pop() || '').trim();
     const no    = (c.pop() || '').trim();
 
-    return { no, name, tel, fax, area, addr, zip };
+    return {
+      no,
+      name,
+      tel,
+      fax,
+      area,
+      addr,
+      zip
+    };
 
   });
 
 });
 
 
-/* ✅ 元のAND検索 */
+/* ✅ 追加：スペースAND検索（客先名のみ使用） */
 function splitMatch(text, input) {
   if (!input) return true;
+
   const words = input.replace(/\u3000/g, ' ').split(' ').filter(w => w);
+
   return words.every(w => text.includes(w));
 }
 
 
-/* ✅ 検索（完全そのまま） */
+/* ✅ 検索（客先名のみ変更、それ以外はそのまま） */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -129,6 +146,7 @@ function search() {
   data.filter(d => {
 
     return (!name || splitMatch(d.name, name)) &&
+
            (!tel || d.tel.replace(/-/g, '').includes(tel.replace(/-/g, ''))) &&
            (!fax || d.fax.replace(/-/g, '').includes(fax.replace(/-/g, ''))) &&
            (!area || d.area.includes(area));
@@ -138,35 +156,15 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
-    /* ✅ 安全なリンク生成（ここだけ追加） */
-    const telLink = d.tel.replace(/-/g, '');
-    const faxLink = d.fax.replace(/-/g, '');
-    const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(d.addr);
-
     card.innerHTML = `
       <div>客先№：${d.no}</div>
       <div>${d.name}</div>
 
       <div>〒${d.zip}</div>
+      <div>${d.addr}</div>
 
-      <div>
-        <a hrefl}
-          ${d.addr}
-        </a>
-      </div>
-
-      <div>
-        TEL：
-        <a href="tel:${telLink   ${d.tel}
-        </a>
-      </div>
-
-      <div>
-        FAX：
-        <a href="tel:${faxLink   ${d.fax}
-        </a>
-      </div>
-
+      <div>TEL：${d.tel}</div>
+      <div>FAX：${d.fax}</div>
       <div>地区：${d.area}</div>
     `;
 
