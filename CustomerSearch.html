@@ -81,7 +81,6 @@ let data = [];
 
 const version = "2026-05";
 
-/* CSV読み込み（変更なし） */
 fetch('CustomerMaster.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -107,7 +106,6 @@ fetch('CustomerMaster.csv?v=' + version)
 });
 
 
-/* スペースAND検索（そのまま） */
 function splitMatch(text, input) {
   if (!input) return true;
   const words = input.replace(/\u3000/g, ' ').split(' ').filter(w => w);
@@ -115,7 +113,6 @@ function splitMatch(text, input) {
 }
 
 
-/* 検索（変更なし） */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -138,21 +135,18 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
-    /* ✅ ここだけ追加（リンク化） */
     card.innerHTML = `
       <div>客先№：${d.no}</div>
       <div>${d.name}</div>
 
       <div>〒${d.zip}</div>
       <div>
-        <a href="https://www.google.com/maps/search/?api={encodeURIComponent(d.addr)}
-          ${d.addr}
-        </a>
+        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}" target="_blank    </a>
       </div>
 
       <div>
         TEL：
-        <a href="tel:${d.tel.replace(/-/g,   ${d.tel}
+        <a href="tel:${d.tel.replace(/-/g, ''){d.tel}
         </a>
       </div>
 
