@@ -81,7 +81,7 @@ let data = [];
 
 const version = "2026-05";
 
-/* 元のまま */
+/* ✅ 元のCSV読み込みそのまま */
 fetch('CustomerMaster.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -106,14 +106,16 @@ fetch('CustomerMaster.csv?v=' + version)
 
 });
 
-/* 客先名AND検索（そのまま） */
+
+/* ✅ 元のAND検索 */
 function splitMatch(text, input) {
   if (!input) return true;
   const words = input.replace(/\u3000/g, ' ').split(' ').filter(w => w);
   return words.every(w => text.includes(w));
 }
 
-/* 検索（完全にそのまま） */
+
+/* ✅ 検索（完全そのまま） */
 function search() {
 
   const name = document.getElementById('name').value;
@@ -136,26 +138,32 @@ function search() {
     const card = document.createElement('div');
     card.className = 'card';
 
-    /* ✅ ここだけ安全に追加（壊れない書き方） */
+    /* ✅ 安全なリンク生成（ここだけ追加） */
+    const telLink = d.tel.replace(/-/g, '');
+    const faxLink = d.fax.replace(/-/g, '');
+    const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(d.addr);
+
     card.innerHTML = `
       <div>客先№：${d.no}</div>
       <div>${d.name}</div>
 
       <div>〒${d.zip}</div>
+
       <div>
-        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.addr)}  ${d.addr}
+        <a hrefl}
+          ${d.addr}
         </a>
       </div>
 
       <div>
         TEL：
-        <a href="tel:${d.tel.replace(/-/g, ''){d.tel}
+        <a href="tel:${telLink   ${d.tel}
         </a>
       </div>
 
       <div>
         FAX：
-        <a href="tel:${d.fax.replace(/-/g    ${d.fax}
+        <a href="tel:${faxLink   ${d.fax}
         </a>
       </div>
 
