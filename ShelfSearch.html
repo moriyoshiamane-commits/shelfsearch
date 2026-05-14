@@ -44,11 +44,11 @@ button {
   padding: 8px 0;
 }
 
-/* ✅ 完全独立表示 */
-.footer-note {
-  margin-top: 20px;
+/* ✅ 表示用 */
+.note {
   font-size: 13px;
   color: #666;
+  margin-bottom: 3px;
 }
 </style>
 
@@ -60,7 +60,16 @@ button {
 
 <div class="search-box">
 <label>部品№</label>
-<input id="partNo" placeholder="例：10709">
+
+<!-- ✅ 例（元ある位置を再現） -->
+<div class="note">例：10709</div>
+
+<!-- ✅ ここに追加（これが正解） -->
+<div class="note">
+※先頭の0は省略して入力できます（例：010709 → 10709）
+</div>
+
+<input id="partNo" placeholder="">
 </div>
 
 <div class="search-box">
@@ -78,7 +87,7 @@ let data = [];
 
 const version = "2026-05";
 
-/* ✅ 元のまま */
+/* ✅ 元のまま（変更なし） */
 fetch('Shelf.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -101,7 +110,7 @@ fetch('Shelf.csv?v=' + version)
 });
 
 
-/* ✅ 元のまま */
+/* ✅ 元の検索そのまま */
 function search() {
 
   const partNoInput = document.getElementById('partNo').value;
@@ -134,11 +143,6 @@ function search() {
 }
 
 </script>
-
-<!-- ✅ ここに追加（検索と完全無関係） -->
-<div class="footer-note">
-※部品№は先頭の0を省略して入力できます（例：010709 → 10709）
-</div>
 
 </body>
 </html>
