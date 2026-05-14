@@ -1,129 +1,135 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>棚番検索</title>
 
 <style>
 body {
+  font-family: sans-serif;
   font-size: 16px;
   margin: 10px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* 入力欄 */
-.search-input {
-  width: 220px;
-  padding: 4px;
-  font-size: 14px;
-  margin-bottom: 6px;
+.search-box {
+  margin-bottom: 10px;
 }
 
-/* 検索ボタン（業務向け・分かりやすい） */
-.search-button {
-  padding: 6px 14px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #ffffff;
+label {
+  display: block;
+  margin-bottom: 3px;
+}
 
-  background: linear-gradient(#4c8bf5, #356ac3);
-  border: 1px solid #2f5fb3;
+input {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  height: 36px;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  color: #fff;
+  background: linear-gradient(#5b8de3,#3f6ac7);
+  border: none;
   border-radius: 6px;
-
-  cursor: pointer;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.25);
 }
 
-.search-button:hover {
-  background: linear-gradient(#5a95f6, #3b73cf);
-}
-
-.search-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
-}
-
-/* 結果表示 */
-.item {
-  border: 1px solid #ccc;
-  padding: 6px;
-  margin: 6px 0;
-}
-
-.shelf {
-  font-weight: bold;
-  color: #d32f2f;
+.card {
+  margin-top: 10px;
+  border-bottom: 1px dotted #ccc;
+  padding: 8px 0;
 }
 </style>
+
 </head>
 
 <body>
 
 <h2>棚番検索</h2>
 
-部品№：<br>
-<input id="part" class="search-input"><br>
+<div class="search-box">
+<label>部品№</label>
+<input id="partNo" placeholder="例：10709">
+</div>
 
-規格：<br>
-<input id="spec" class="search-input"><br>
+<div class="search-box">
+<label>規格（部分一致）</label>
+<input id="spec">
+</div>
 
-<button class="search-button" onclick="search()">検索</button>
+<button onclick="search()">検索</button>
 
 <div id="result"></div>
 
 <script>
+
 let data = [];
 
-// CSV読み込み（UTF-8）
-fetch("BUSDAU.CSV")
-  .then(res => res.text())
-  .then(text => {
-    const lines = text.trim().split("\n");
-    lines.shift(); // ヘッダ行を除外
+const version = "2026-05";
 
-    data = lines.map(line => {
-      const cols = line.split(",");
-      return {
-        part: cols[0],
-        name: cols[1],
-        spec: cols[2],
-        shelf: cols[3]
-      };
-    });
+/* ✅ CSV読み込み（変更なし） */
+fetch('Shelf.csv?v=' + version)
+.then(res => res.text())
+.then(text => {
+
+  const lines = text.split('\n').slice(1);
+
+  data = lines.map(line => {
+
+    const c = line.split(',');
+
+    const partNo = (c[0] || '').trim();
+    const name   = (c[1] || '').trim();
+    const spec   = (c[2] || '').trim();
+    const shelf  = (c[3] || '').trim();
+
+    return { partNo, name, spec, shelf };
+
   });
 
+});
+
+
+/* ✅ 検索 */
 function search() {
-  const p = document.getElementById("part").value.trim();
-  const s = document.getElementById("spec").value.trim();
-  const area = document.getElementById("result");
-  area.innerHTML = "";
 
-  const hits = data.filter(d =>
-  (!p || d.part.includes(p)) &&
-  (!s || d.spec.toLowerCase().includes(s.toLowerCase()))
-  );
+  const partNoInput = document.getElementById('partNo').value;
+  const specInput   = document.getElementById('spec').value;
 
-  if (hits.length === 0) {
-    area.innerHTML = "該当なし";
-    return;
-  }
+  const result = document.getElementById('result');
+  result.innerHTML = '';
 
-  hits.forEach(d => {
-    
-area.innerHTML += `
-  <div class="item">
-    部品№：${d.part}<br>
-    品名：${d.name}<br>
-    規格：${d.spec}<br>
-    棚番：<span class="shelf">${d.shelf}</span>
-  </div>
+  data.filter(d => {
 
+    return (!partNoInput || 
+            d.partNo.padStart(6, '0').includes(partNoInput.padStart(6, '0'))) &&
+
+           (!specInput || d.spec.includes(specInput));
+
+  }).forEach(d => {
+
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    card.innerHTML = `
+      <div>部品№：${d.partNo}</div>
+      <div>${d.name}</div>
+      <div>規格：${d.spec}</div>
+      <div>棚番：${d.shelf}</div>
     `;
+
+    result.appendChild(card);
+
   });
+
 }
+
 </script>
 
 </body>
 </html>
+``
