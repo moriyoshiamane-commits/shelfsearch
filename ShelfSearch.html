@@ -44,11 +44,9 @@ button {
   padding: 8px 0;
 }
 
-/* ✅ 説明文用（安全） */
 .note {
   font-size: 13px;
   color: #666;
-  margin-top: -5px;
   margin-bottom: 10px;
 }
 </style>
@@ -64,7 +62,7 @@ button {
 <input id="partNo" placeholder="例：10709">
 </div>
 
-<!-- ✅ ここに配置（絶対安全エリア） -->
+<!-- ✅ 必ずここに置く（安全エリア） -->
 <div class="note">
 ※先頭の0は省略して入力できます（例：010709 → 10709）
 </div>
@@ -84,7 +82,7 @@ let data = [];
 
 const version = "2026-05";
 
-/* ✅ CSV読み込み（変更なし） */
+/* ✅ ここは元通り */
 fetch('Shelf.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -107,7 +105,6 @@ fetch('Shelf.csv?v=' + version)
 });
 
 
-/* ✅ 検索（変更なし） */
 function search() {
 
   const partNoInput = document.getElementById('partNo').value;
@@ -120,7 +117,6 @@ function search() {
 
     return (!partNoInput || 
             d.partNo.padStart(6, '0').includes(partNoInput.padStart(6, '0'))) &&
-
            (!specInput || d.spec.includes(specInput));
 
   }).forEach(d => {
