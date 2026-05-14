@@ -43,6 +43,14 @@ button {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
 }
+
+/* ✅ 説明文用（安全） */
+.note {
+  font-size: 13px;
+  color: #666;
+  margin-top: -5px;
+  margin-bottom: 10px;
+}
 </style>
 
 </head>
@@ -54,12 +62,11 @@ button {
 <div class="search-box">
 <label>部品№</label>
 <input id="partNo" placeholder="例：10709">
-
-<!-- ✅ 追加（ここだけ） -->
-<div style="font-size: 13px; color: #666;">
-※先頭の0は省略して入力できます（例：010709 → 10709）
 </div>
 
+<!-- ✅ ここに配置（絶対安全エリア） -->
+<div class="note">
+※先頭の0は省略して入力できます（例：010709 → 10709）
 </div>
 
 <div class="search-box">
@@ -100,7 +107,7 @@ fetch('Shelf.csv?v=' + version)
 });
 
 
-/* ✅ 検索 */
+/* ✅ 検索（変更なし） */
 function search() {
 
   const partNoInput = document.getElementById('partNo').value;
