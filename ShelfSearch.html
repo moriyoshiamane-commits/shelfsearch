@@ -43,13 +43,6 @@ button {
   border-bottom: 1px dotted #ccc;
   padding: 8px 0;
 }
-
-/* ✅ 表示用 */
-.note {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 3px;
-}
 </style>
 
 </head>
@@ -61,15 +54,9 @@ button {
 <div class="search-box">
 <label>部品№</label>
 
-<!-- ✅ 例（元ある位置を再現） -->
-<div class="note">例：10709</div>
+<!-- ✅ ここだけ変更（唯一安全） -->
+<input id="partNo" placeholder="例：10709（先頭の0は不要）">
 
-<!-- ✅ ここに追加（これが正解） -->
-<div class="note">
-※先頭の0は省略して入力できます（例：010709 → 10709）
-</div>
-
-<input id="partNo" placeholder="">
 </div>
 
 <div class="search-box">
@@ -87,7 +74,7 @@ let data = [];
 
 const version = "2026-05";
 
-/* ✅ 元のまま（変更なし） */
+/* ✅ 絶対に触らない（元のまま） */
 fetch('Shelf.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
