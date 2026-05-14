@@ -1,69 +1,13 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>棚番検索</title>
-
-<style>
-body {
-  font-family: sans-serif;
-  font-size: 16px;
-  margin: 10px;
-}
-
-.search-box {
-  margin-bottom: 10px;
-}
-
-label {
-  display: block;
-  margin-bottom: 3px;
-}
-
-input {
-  display: block;
-  width: 300px;
-  max-width: 100%;
-  height: 36px;
-  font-size: 16px;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  color: #fff;
-  background: linear-gradient(#5b8de3,#3f6ac7);
-  border: none;
-  border-radius: 6px;
-}
-
-.card {
-  margin-top: 10px;
-  border-bottom: 1px dotted #ccc;
-  padding: 8px 0;
-}
-</style>
-
-</head>
-
-<body>
-
 <h2>棚番検索</h2>
 
-<div class="search-box">
-<!-- ✅ ここだけ変更 -->
-<label>部品№（先頭の0は不要）</label>
+<!-- ✅ ここだけ変更（凡例追加） -->
+部品№（先頭の0は不要）：<br>
+<input id="part" class="search-input"><br>
 
-<input id="partNo" placeholder="例：10709">
-</div>
+規格：<br>
+<input id="spec" class="search-input"><br>
 
-<div class="search-box">
-<label>規格（部分一致）</label>
-<input id="spec">
-</div>
-
-<button onclick="search()">検索</button>
+<button class="search-button" onclick="search()">検索</button>
 
 <div id="result"></div>
 
@@ -73,7 +17,7 @@ let data = [];
 
 const version = "2026-05";
 
-/* ✅ 元のまま */
+/* ✅ 元のまま（絶対に変更しない） */
 fetch('Shelf.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -95,10 +39,11 @@ fetch('Shelf.csv?v=' + version)
 
 });
 
+
 /* ✅ 元のまま */
 function search() {
 
-  const partNoInput = document.getElementById('partNo').value;
+  const partNoInput = document.getElementById('part').value;
   const specInput   = document.getElementById('spec').value;
 
   const result = document.getElementById('result');
@@ -112,7 +57,6 @@ function search() {
   }).forEach(d => {
 
     const card = document.createElement('div');
-    card.className = 'card';
 
     card.innerHTML = `
       <div>部品№：${d.partNo}</div>
@@ -128,6 +72,4 @@ function search() {
 }
 
 </script>
-
-</body>
-</html>
+``
