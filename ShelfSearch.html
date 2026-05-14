@@ -44,6 +44,7 @@ button {
   padding: 8px 0;
 }
 
+/* ✅ 説明文 */
 .note {
   font-size: 13px;
   color: #666;
@@ -57,13 +58,14 @@ button {
 
 <h2>棚番検索</h2>
 
+<!-- ✅ ここに追加（絶対安全） -->
+<div class="note">
+※部品№は先頭の0を省略して入力できます（例：010709 → 10709）
+</div>
+
 <div class="search-box">
 <label>部品№</label>
 <input id="partNo" placeholder="例：10709">
-</div>
-
-<div class="note">
-※先頭の0は省略して入力できます（例：010709 → 10709）
 </div>
 
 <div class="search-box">
@@ -81,7 +83,7 @@ let data = [];
 
 const version = "2026-05";
 
-/* ✅ CSV読み込み（元のまま） */
+/* ✅ 元のまま（絶対触らない） */
 fetch('Shelf.csv?v=' + version)
 .then(res => res.text())
 .then(text => {
@@ -104,7 +106,7 @@ fetch('Shelf.csv?v=' + version)
 });
 
 
-/* ✅ 検索 */
+/* ✅ 元の検索そのまま */
 function search() {
 
   const partNoInput = document.getElementById('partNo').value;
@@ -115,11 +117,7 @@ function search() {
 
   data.filter(d => {
 
-    /* ✅ ここだけ変更（最重要） */
-    const dbPart   = d.partNo.replace(/^0+/, '');
-    const inputPart = partNoInput.replace(/^0+/, '');
-
-    return (!partNoInput || dbPart.includes(inputPart)) &&
+    return (!partNoInput || d.partNo.includes(partNoInput)) &&
            (!specInput || d.spec.includes(specInput));
 
   }).forEach(d => {
