@@ -101,7 +101,7 @@ function search() {
   area.innerHTML = "";
 
   const hits = data.filter(d =>
-  (!p || d.part.includes(p)) &&
+  (!p || d.part.includes(p) || parseInt(d.part,10) === parseInt(p,10)) &&
   (!s || d.spec.toLowerCase().includes(s.toLowerCase()))
   );
 
