@@ -103,10 +103,12 @@ function search() {
   const area = document.getElementById("result");
   area.innerHTML = "";
 
-  const hits = data.filter(d =>
+const hits = data.filter(d =>
   (!p || d.part.includes(p) || parseInt(d.part,10) === parseInt(p,10)) &&
-  (!s || d.spec.toLowerCase().includes(s.toLowerCase()))
-  );
+  (!s || d.spec.toLowerCase().includes(s.toLowerCase())) &&
+  (!h || d.name.includes(h))
+);
+
 
   if (hits.length === 0) {
     area.innerHTML = "該当なし";
