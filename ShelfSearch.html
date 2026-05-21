@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -21,37 +20,24 @@ body {
   margin-bottom: 6px;
 }
 
-/* 検索ボタン（業務向け・分かりやすい） */
+/* ボタン */
 .search-button {
   padding: 6px 14px;
   font-size: 14px;
   font-weight: bold;
   color: #ffffff;
-
   background: linear-gradient(#4c8bf5, #356ac3);
   border: 1px solid #2f5fb3;
   border-radius: 6px;
-
   cursor: pointer;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.25);
 }
 
-.search-button:hover {
-  background: linear-gradient(#5a95f6, #3b73cf);
-}
-
-.search-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
-}
-
-/* 結果表示 */
+/* 結果 */
 .item {
   border: 1px solid #ccc;
   padding: 6px;
   margin: 6px 0;
 }
-
 .shelf {
   font-weight: bold;
   color: #d32f2f;
@@ -66,6 +52,9 @@ body {
 部品№：<br>
 <input id="part" class="search-input"><br>
 
+品名：<br>
+<input id="hinmei" class="search-input"><br>
+
 規格：<br>
 <input id="spec" class="search-input"><br>
 
@@ -74,35 +63,40 @@ body {
 <div id="result"></div>
 
 <script>
+
 let data = [];
 
-// CSV読み込み（UTF-8）
+// CSV読み込み
 fetch("BUSDAU.CSV")
-  .then(res => res.text())
-  .then(text => {
-    const lines = text.trim().split("\n");
-    lines.shift(); // ヘッダ行を除外
+.then(res => res.text())
+.then(text => {
+  const lines = text.trim().split("\n");
+  lines.shift();
 
-    data = lines.map(line => {
-      const cols = line.split(",");
-      return {
-        part: cols[0],
-        name: cols[1],
-        spec: cols[2],
-        shelf: cols[3]
-      };
-    });
+  data = lines.map(line => {
+    const cols = line.split(",");
+    return {
+      part: cols[0],
+      name: cols[1],   // 品名
+      spec: cols[2],
+      shelf: cols[3]
+    };
   });
+});
 
 function search() {
+
   const p = document.getElementById("part").value.trim();
   const s = document.getElementById("spec").value.trim();
+  const h = document.getElementById("hinmei").value.trim();   // ←追加
+
   const area = document.getElementById("result");
   area.innerHTML = "";
 
   const hits = data.filter(d =>
-  (!p || d.part.includes(p) || parseInt(d.part,10) === parseInt(p,10)) &&
-  (!s || d.spec.toLowerCase().includes(s.toLowerCase()))
+    (!p || d.part.includes(p) || parseInt(d.part,10) === parseInt(p,10)) &&
+    (!s || d.spec.toLowerCase().includes(s.toLowerCase())) &&
+    (!h || d.name.includes(h))   // ←追加（曖昧検索）
   );
 
   if (hits.length === 0) {
@@ -111,18 +105,17 @@ function search() {
   }
 
   hits.forEach(d => {
-    
-area.innerHTML += `
-  <div class="item">
-    部品№：${d.part}<br>
-    品名：${d.name}<br>
-    規格：${d.spec}<br>
-    棚番：<span class="shelf">${d.shelf}</span>
-  </div>
-
+    area.innerHTML += `
+      <div class="item">
+      部品№：${d.part}<br>
+      品名：${d.name}<br>
+      規格：${d.spec}<br>
+      棚番：<span class="shelf">${d.shelf}</span>
+      </div>
     `;
   });
 }
+
 </script>
 
 </body>
