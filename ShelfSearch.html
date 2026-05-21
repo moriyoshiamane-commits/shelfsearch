@@ -103,11 +103,13 @@ function search() {
   const area = document.getElementById("result");
   area.innerHTML = "";
 
+
 const hits = data.filter(d =>
   (!p || d.part.includes(p) || parseInt(d.part,10) === parseInt(p,10)) &&
   (!s || d.spec.toLowerCase().includes(s.toLowerCase())) &&
-  (!h || d.name.includes(h))
+  (!h || d["品名"].includes(h))
 );
+
 
 
   if (hits.length === 0) {
