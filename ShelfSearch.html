@@ -66,9 +66,6 @@ body {
 部品№：<br>
 <input id="part" class="search-input"><br>
 
-品名：<br>
-<input type="text" id="hinmei" class="search-input"><br>
-  
 規格：<br>
 <input id="spec" class="search-input"><br>
 
@@ -103,14 +100,10 @@ function search() {
   const area = document.getElementById("result");
   area.innerHTML = "";
 
-
-const hits = data.filter(d =>
+  const hits = data.filter(d =>
   (!p || d.part.includes(p) || parseInt(d.part,10) === parseInt(p,10)) &&
-  (!s || d.spec.toLowerCase().includes(s.toLowerCase())) &&
-  (!h || d["品名"].includes(h))
-);
-
-
+  (!s || d.spec.toLowerCase().includes(s.toLowerCase()))
+  );
 
   if (hits.length === 0) {
     area.innerHTML = "該当なし";
