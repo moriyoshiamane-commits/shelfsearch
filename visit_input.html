@@ -68,7 +68,7 @@ textarea {
 <script>
 let data = [];
 
-// JSON読み込み
+// ✅ JSON読み込み
 window.onload = function(){
   fetch("visit_data.json")
     .then(res => res.json())
@@ -78,7 +78,7 @@ window.onload = function(){
     });
 };
 
-// 登録
+// ✅ 登録
 function parseMail(){
   let text = document.getElementById("mailtext").value;
 
@@ -103,7 +103,7 @@ function parseMail(){
   document.getElementById("mailtext").value = "";
 }
 
-// 削除
+// ✅ 削除
 function deleteRecord(index){
   if(confirm("削除しますか？")){
     data.splice(index, 1);
@@ -111,7 +111,7 @@ function deleteRecord(index){
   }
 }
 
-// 表示
+// ✅ 表示
 function display(mode){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -156,19 +156,12 @@ function display(mode){
   document.getElementById("list").innerHTML = html;
 }
 
-// データ出力
+// ✅ JSON表示（←ここが今回のポイント）
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
-  let blob = new Blob([dataStr], {type: "application/json"});
-  let url = URL.createObjectURL(blob);
-
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = "visit_data.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
+  let win = window.open("", "_blank");
+  win.document.write("<pre>" + dataStr + "</pre>");
 }
 </script>
 
