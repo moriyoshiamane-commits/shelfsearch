@@ -20,20 +20,28 @@ body {
   background: linear-gradient(#5b8de3, #3f6ac7);
   color: #ffffff;
   font-weight: bold;
-  text-decoration: none;
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.3);
   border: none;
   cursor: pointer;
 }
 
-/* 入力欄 */
+/* 削除ボタン（赤系） */
+.delete-button {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: #d9534f;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 textarea {
   width: 100%;
   max-width: 500px;
 }
 
-/* カード */
 .card {
   border:1px solid #ccc;
   margin:10px 0;
@@ -60,7 +68,7 @@ textarea {
 <script>
 let data = [];
 
-// ✅ 初期読み込み（保存データ復元）
+// 初期読込
 window.onload = function(){
   let saved = localStorage.getItem("visitData");
   if(saved){
@@ -69,7 +77,7 @@ window.onload = function(){
   display();
 };
 
-// ✅ 登録
+// 登録
 function parseMail(){
   let text = document.getElementById("mailtext").value;
 
@@ -77,7 +85,6 @@ function parseMail(){
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
 
-  // 日付変換
   let dateMatch = dateText.match(/(\d{4})\/(\d{2})\/(\d{2})/);
   let dateObj = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : null;
 
@@ -90,7 +97,6 @@ function parseMail(){
 
   data.push(record);
 
-  // ✅ 保存
   localStorage.setItem("visitData", JSON.stringify(data));
 
   display();
@@ -98,7 +104,16 @@ function parseMail(){
   document.getElementById("mailtext").value = "";
 }
 
-// ✅ 表示
+// 削除
+function deleteRecord(index){
+  if(confirm("削除しますか？")){
+    data.splice(index, 1);
+    localStorage.setItem("visitData", JSON.stringify(data));
+    display();
+  }
+}
+
+// 表示
 function display(showToday=false){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -107,25 +122,26 @@ function display(showToday=false){
     if(!d.date) return false;
 
     let dDate = new Date(d.date);
+    dDate.setHours(0,0,0,0);
 
     if(showToday){
-      return dDate.getTime() === today.getTime();
+      return dDate.toDateString() === today.toDateString();
     }
 
     return dDate >= today;
   });
 
-  // ✅ 日付順
   filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
 
   let html = "";
 
-  filtered.forEach(d => {
+  filtered.forEach((d, index) => {
     html += `
       <div class="card">
         <b>${d.rawDate}</b><br>
         ${d.customer}<br>
-        担当：${d.staff}
+        担当：${d.staff}<br>
+        <button class="delete-button" onclick="deleteRecord(${index})">削除</button>
       </div>
     `;
   });
