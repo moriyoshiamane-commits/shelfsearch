@@ -67,19 +67,12 @@ textarea {
 <script>
 let data = [];
 
-// ✅ 共有データ読み込み
+// ✅ 常にGitHubのJSONだけ使う（ここが重要）
 window.onload = function(){
   fetch("visit_data.json")
     .then(res => res.json())
     .then(json => {
       data = json;
-      display();
-    })
-    .catch(() => {
-      let saved = localStorage.getItem("visitData");
-      if(saved){
-        data = JSON.parse(saved);
-      }
       display();
     });
 };
@@ -91,7 +84,7 @@ function parseMail(){
   let dateText = (text.match(/訪問日時：(.+)/) || ["",""])[1];
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
-  let room = (text.match(/打合せ室：(.+)/) || ["",""])[1];  // ★追加
+  let room = (text.match(/打合せ室：(.+)/) || ["",""])[1];
 
   let dateMatch = dateText.match(/(\d{4})\/(\d{2})\/(\d{2})/);
   let dateObj = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : null;
@@ -101,12 +94,10 @@ function parseMail(){
     date: dateObj,
     customer: customer,
     staff: staff,
-    room: room  // ★追加
+    room: room
   };
 
   data.push(record);
-
-  localStorage.setItem("visitData", JSON.stringify(data));
 
   display();
 
@@ -117,7 +108,6 @@ function parseMail(){
 function deleteRecord(index){
   if(confirm("削除しますか？")){
     data.splice(index, 1);
-    localStorage.setItem("visitData", JSON.stringify(data));
     display();
   }
 }
@@ -150,7 +140,7 @@ function display(showToday=false){
         <b>${d.rawDate}</b><br>
         ${d.customer}<br>
         担当：${d.staff}<br>
-        打合せ室：${d.room || ""}<br> <!-- ★追加 -->
+        打合せ室：${d.room || ""}<br>
         <button class="delete-button" onclick="deleteRecord(${index})">削除</button>
       </div>
     `;
@@ -159,7 +149,7 @@ function display(showToday=false){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ データ出力
+// ✅ データ出力（これだけで共有）
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
@@ -177,4 +167,3 @@ function exportJSON(){
 
 </body>
 </html>
-``
