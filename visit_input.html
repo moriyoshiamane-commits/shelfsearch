@@ -58,8 +58,9 @@ textarea {
 
 <button class="menu-button" onclick="parseMail()">登録</button>
 <button class="menu-button" onclick="exportJSON()">データ出力</button>
-<button class="menu-button" onclick="display(true)">本日の予定</button>
-<button class="menu-button" onclick="display()">全予定</button>
+<button class="menu-button" onclick="display('today')">本日の予定</button>
+<button class="menu-button" onclick="display('future')">今後の予定</button>
+<button class="menu-button" onclick="display('past')">過去</button>
 
 <h3>登録済み</h3>
 <div id="list"></div>
@@ -67,17 +68,17 @@ textarea {
 <script>
 let data = [];
 
-// ✅ JSONのみ読み込み（統一）
+// JSON読み込み
 window.onload = function(){
   fetch("visit_data.json")
     .then(res => res.json())
     .then(json => {
       data = json;
-      display();
+      display('future');
     });
 };
 
-// ✅ 登録
+// 登録
 function parseMail(){
   let text = document.getElementById("mailtext").value;
 
@@ -89,31 +90,29 @@ function parseMail(){
   let dateMatch = dateText.match(/(\d{4})\/(\d{2})\/(\d{2})/);
   let dateObj = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : null;
 
-  let record = {
+  data.push({
     rawDate: dateText,
     date: dateObj,
     customer: customer,
     staff: staff,
     room: room
-  };
+  });
 
-  data.push(record);
-
-  display();
+  display('future');
 
   document.getElementById("mailtext").value = "";
 }
 
-// ✅ 削除
+// 削除
 function deleteRecord(index){
   if(confirm("削除しますか？")){
     data.splice(index, 1);
-    display();
+    display('future');
   }
 }
 
-// ✅ 表示（←ここ修正済）
-function display(showToday=false){
+// 表示
+function display(mode){
   let today = new Date();
   today.setHours(0,0,0,0);
 
@@ -123,12 +122,18 @@ function display(showToday=false){
     let dDate = new Date(d.date);
     dDate.setHours(0,0,0,0);
 
-    // 本日ボタン
-    if(showToday){
+    if(mode === 'today'){
       return dDate.toDateString() === today.toDateString();
     }
 
-    // ✅ 全予定は「全部表示」
+    if(mode === 'future'){
+      return dDate >= today;
+    }
+
+    if(mode === 'past'){
+      return dDate < today;
+    }
+
     return true;
   });
 
@@ -151,7 +156,7 @@ function display(showToday=false){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ データ出力（共有用）
+// データ出力
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
@@ -169,4 +174,3 @@ function exportJSON(){
 
 </body>
 </html>
-``
