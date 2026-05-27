@@ -1,3 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工場見学予定入力</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  margin: 10px;
+}
+
+textarea {
+  width: 100%;
+  max-width: 500px;
+}
+
+button {
+  margin-top: 10px;
+  margin-right: 5px;
+  padding: 8px 12px;
+}
+
+.card {
+  border:1px solid #ccc;
+  margin:10px 0;
+  padding:10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>工場見学予定 入力</h2>
+
+<textarea id="mailtext" rows="10" placeholder="ここにメール内容を貼り付け"></textarea>
+<br>
+
+<button onclick="parseMail()">登録</button>
+<button onclick="display(true)">本日の予定</button>
+<button onclick="display()">全予定</button>
+
+<h3>登録済み</h3>
+<div id="list"></div>
+
+<script>
 let data = [];
 
 function parseMail(){
@@ -7,7 +55,7 @@ function parseMail(){
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
 
-  // 日付をISO形式へ変換（並び替え用）
+  // 日付抽出
   let dateMatch = dateText.match(/(\d{4})\/(\d{2})\/(\d{2})/);
   let dateObj = dateMatch ? new Date(`${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`) : null;
 
@@ -28,33 +76,38 @@ function display(showToday=false){
   let today = new Date();
   today.setHours(0,0,0,0);
 
-  // ✅ 過去削除 ＆ フィルタ
   let filtered = data.filter(d => {
     if(!d.date) return false;
+
     let dDate = new Date(d.date);
     dDate.setHours(0,0,0,0);
 
+    // 本日だけ表示
     if(showToday){
       return dDate.getTime() === today.getTime();
-    } else {
-      return dDate >= today;
     }
+    // 今日以降のみ表示（過去は非表示）
+    return dDate >= today;
   });
 
-  // ✅ 日付順ソート
+  // 日付順ソート
   filtered.sort((a,b) => a.date - b.date);
 
   let html = "";
 
   filtered.forEach(d => {
     html += `
-    <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-      <b>${d.rawDate}</b><br>
-      ${d.customer}<br>
-      担当：${d.staff}
-    </div>
+      <div class="card">
+        <b>${d.rawDate}</b><br>
+        ${d.customer}<br>
+        担当：${d.staff}
+      </div>
     `;
   });
 
   document.getElementById("list").innerHTML = html;
 }
+</script>
+
+</body>
+</html>
