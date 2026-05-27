@@ -1,34 +1,19 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>工場見学予定入力</title>
-</head>
-<body>
-
-<h2>工場見学予定 入力</h2>
-
-<textarea id="mailtext" rows="15" cols="60"
-placeholder="ここにメール内容を貼り付け"></textarea>
-
-<br><br>
-<button onclick="parseMail()">登録</button>
-
-<h3>登録済み</h3>
-<div id="list"></div>
-
-<script>
 let data = [];
 
 function parseMail(){
   let text = document.getElementById("mailtext").value;
 
-  let date = (text.match(/訪問日時：(.+)/) || ["",""])[1];
+  let dateText = (text.match(/訪問日時：(.+)/) || ["",""])[1];
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
 
+  // 日付をISO形式へ変換（並び替え用）
+  let dateMatch = dateText.match(/(\d{4})\/(\d{2})\/(\d{2})/);
+  let dateObj = dateMatch ? new Date(`${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`) : null;
+
   let record = {
-    date: date,
+    rawDate: dateText,
+    date: dateObj,
     customer: customer,
     staff: staff
   };
@@ -39,13 +24,32 @@ function parseMail(){
   document.getElementById("mailtext").value = "";
 }
 
-function display(){
+function display(showToday=false){
+  let today = new Date();
+  today.setHours(0,0,0,0);
+
+  // ✅ 過去削除 ＆ フィルタ
+  let filtered = data.filter(d => {
+    if(!d.date) return false;
+    let dDate = new Date(d.date);
+    dDate.setHours(0,0,0,0);
+
+    if(showToday){
+      return dDate.getTime() === today.getTime();
+    } else {
+      return dDate >= today;
+    }
+  });
+
+  // ✅ 日付順ソート
+  filtered.sort((a,b) => a.date - b.date);
+
   let html = "";
 
-  data.forEach(d => {
+  filtered.forEach(d => {
     html += `
     <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-      <b>${d.date}</b><br>
+      <b>${d.rawDate}</b><br>
       ${d.customer}<br>
       担当：${d.staff}
     </div>
@@ -54,8 +58,3 @@ function display(){
 
   document.getElementById("list").innerHTML = html;
 }
-</script>
-
-</body>
-</html>
-``
