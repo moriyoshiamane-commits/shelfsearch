@@ -67,16 +67,25 @@ textarea {
 <script>
 let data = [];
 
-// 初期読込
+// ✅ 共有データ読み込み（ここが重要）
 window.onload = function(){
-  let saved = localStorage.getItem("visitData");
-  if(saved){
-    data = JSON.parse(saved);
-  }
-  display();
+  fetch("visit_data.json")
+    .then(res => res.json())
+    .then(json => {
+      data = json;
+      display();
+    })
+    .catch(() => {
+      // ファイルが無い場合はローカルデータ
+      let saved = localStorage.getItem("visitData");
+      if(saved){
+        data = JSON.parse(saved);
+      }
+      display();
+    });
 };
 
-// 登録
+// ✅ 登録
 function parseMail(){
   let text = document.getElementById("mailtext").value;
 
@@ -103,7 +112,7 @@ function parseMail(){
   document.getElementById("mailtext").value = "";
 }
 
-// 削除
+// ✅ 削除
 function deleteRecord(index){
   if(confirm("削除しますか？")){
     data.splice(index, 1);
@@ -112,7 +121,7 @@ function deleteRecord(index){
   }
 }
 
-// 表示
+// ✅ 表示
 function display(showToday=false){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -148,7 +157,7 @@ function display(showToday=false){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ データ出力
+// ✅ データ出力（共有用）
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
