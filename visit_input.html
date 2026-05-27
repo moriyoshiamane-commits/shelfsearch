@@ -67,7 +67,7 @@ textarea {
 <script>
 let data = [];
 
-// ✅ 常にGitHubのJSONだけ使う（ここが重要）
+// ✅ JSONのみ読み込み（統一）
 window.onload = function(){
   fetch("visit_data.json")
     .then(res => res.json())
@@ -112,7 +112,7 @@ function deleteRecord(index){
   }
 }
 
-// ✅ 表示
+// ✅ 表示（←ここ修正済）
 function display(showToday=false){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -123,11 +123,13 @@ function display(showToday=false){
     let dDate = new Date(d.date);
     dDate.setHours(0,0,0,0);
 
+    // 本日ボタン
     if(showToday){
       return dDate.toDateString() === today.toDateString();
     }
 
-    return dDate >= today;
+    // ✅ 全予定は「全部表示」
+    return true;
   });
 
   filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -149,7 +151,7 @@ function display(showToday=false){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ データ出力（これだけで共有）
+// ✅ データ出力（共有用）
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
@@ -167,3 +169,4 @@ function exportJSON(){
 
 </body>
 </html>
+``
