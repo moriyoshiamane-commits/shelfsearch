@@ -11,17 +11,29 @@ body {
   margin: 10px;
 }
 
+/* 共通ボタン */
+.menu-button {
+  display: inline-block;
+  padding: 10px 16px;
+  margin-top: 10px;
+  margin-right: 8px;
+  background: linear-gradient(#5b8de3, #3f6ac7);
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  border: none;
+  cursor: pointer;
+}
+
+/* 入力欄 */
 textarea {
   width: 100%;
   max-width: 500px;
 }
 
-button {
-  margin-top: 10px;
-  margin-right: 5px;
-  padding: 8px 12px;
-}
-
+/* カード */
 .card {
   border:1px solid #ccc;
   margin:10px 0;
@@ -38,9 +50,9 @@ button {
 <textarea id="mailtext" rows="10" placeholder="ここにメール内容を貼り付け"></textarea>
 <br>
 
-<button onclick="parseMail()">登録</button>
-<button onclick="display(true)">本日の予定</button>
-<button onclick="display()">全予定</button>
+<button class="menu-button" onclick="parseMail()">登録</button>
+<button class="menu-button" onclick="display(true)">本日の予定</button>
+<button class="menu-button" onclick="display()">全予定</button>
 
 <h3>登録済み</h3>
 <div id="list"></div>
@@ -48,6 +60,16 @@ button {
 <script>
 let data = [];
 
+// ✅ 初期読み込み（保存データ復元）
+window.onload = function(){
+  let saved = localStorage.getItem("visitData");
+  if(saved){
+    data = JSON.parse(saved);
+  }
+  display();
+};
+
+// ✅ 登録
 function parseMail(){
   let text = document.getElementById("mailtext").value;
 
@@ -55,9 +77,9 @@ function parseMail(){
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
 
-  // 日付抽出
+  // 日付変換
   let dateMatch = dateText.match(/(\d{4})\/(\d{2})\/(\d{2})/);
-  let dateObj = dateMatch ? new Date(`${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`) : null;
+  let dateObj = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : null;
 
   let record = {
     rawDate: dateText,
@@ -67,11 +89,16 @@ function parseMail(){
   };
 
   data.push(record);
+
+  // ✅ 保存
+  localStorage.setItem("visitData", JSON.stringify(data));
+
   display();
 
   document.getElementById("mailtext").value = "";
 }
 
+// ✅ 表示
 function display(showToday=false){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -80,18 +107,16 @@ function display(showToday=false){
     if(!d.date) return false;
 
     let dDate = new Date(d.date);
-    dDate.setHours(0,0,0,0);
 
-    // 本日だけ表示
     if(showToday){
       return dDate.getTime() === today.getTime();
     }
-    // 今日以降のみ表示（過去は非表示）
+
     return dDate >= today;
   });
 
-  // 日付順ソート
-  filtered.sort((a,b) => a.date - b.date);
+  // ✅ 日付順
+  filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
 
   let html = "";
 
