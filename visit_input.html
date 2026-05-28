@@ -84,7 +84,7 @@ function parseMail(){
 
   let dateText = (text.match(/訪問日時：(.+)/) || ["",""])[1];
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
-  let trader = (text.match(/商社様　：(.+)/) || ["",""])[1];  // ★追加
+  let trader = (text.match(/商社様　：(.+)/) || ["",""])[1];
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
   let room = (text.match(/打合せ室：(.+)/) || ["",""])[1];
 
@@ -95,7 +95,7 @@ function parseMail(){
     rawDate: dateText,
     date: dateObj,
     customer: customer,
-    trader: trader,  // ★追加
+    trader: trader,
     staff: staff,
     room: room
   });
@@ -105,7 +105,7 @@ function parseMail(){
   document.getElementById("mailtext").value = "";
 }
 
-// ✅ 削除
+// ✅ 削除（修正不要）
 function deleteRecord(index){
   if(confirm("削除しますか？")){
     data.splice(index, 1);
@@ -113,7 +113,7 @@ function deleteRecord(index){
   }
 }
 
-// ✅ 表示
+// ✅ 表示（ここが修正ポイント）
 function display(mode){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -143,12 +143,15 @@ function display(mode){
 
   let html = "";
 
-  filtered.forEach((d, index) => {
+  // ✅ ✅ 修正ポイント（ここ重要）
+  filtered.forEach(d => {
+    let index = data.indexOf(d);   // ←これがバグ修正
+
     html += `
       <div class="card">
         <b>${d.rawDate}</b><br>
         ${d.customer}<br>
-        商社様：${d.trader || ""}<br>  <!-- ★追加 -->
+        商社様：${d.trader || ""}<br>
         担当：${d.staff}<br>
         打合せ室：${d.room || ""}<br>
         <button class="delete-button" onclick="deleteRecord(${index})">削除</button>
@@ -159,7 +162,7 @@ function display(mode){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ JSON表示
+// ✅ JSON表示（コピー用）
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
@@ -170,4 +173,3 @@ function exportJSON(){
 
 </body>
 </html>
-``
