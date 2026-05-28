@@ -84,6 +84,7 @@ function parseMail(){
 
   let dateText = (text.match(/訪問日時：(.+)/) || ["",""])[1];
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
+  let trader = (text.match(/商社様　：(.+)/) || ["",""])[1];  // ★追加
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
   let room = (text.match(/打合せ室：(.+)/) || ["",""])[1];
 
@@ -94,6 +95,7 @@ function parseMail(){
     rawDate: dateText,
     date: dateObj,
     customer: customer,
+    trader: trader,  // ★追加
     staff: staff,
     room: room
   });
@@ -146,6 +148,7 @@ function display(mode){
       <div class="card">
         <b>${d.rawDate}</b><br>
         ${d.customer}<br>
+        商社様：${d.trader || ""}<br>  <!-- ★追加 -->
         担当：${d.staff}<br>
         打合せ室：${d.room || ""}<br>
         <button class="delete-button" onclick="deleteRecord(${index})">削除</button>
@@ -156,7 +159,7 @@ function display(mode){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ JSON表示（←ここが今回のポイント）
+// ✅ JSON表示
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
@@ -167,3 +170,4 @@ function exportJSON(){
 
 </body>
 </html>
+``
