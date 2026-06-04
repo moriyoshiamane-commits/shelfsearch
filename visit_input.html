@@ -74,15 +74,12 @@ window.onload = function(){
     .then(res => res.json())
     .then(json => {
       data = json;
-
       display('future');
-
-      // ✅ ✅ 本日の予定チェック（ここが新機能）
-      showTodayReminder();
+      showTodayReminder(); // ✅ ポップ表示
     });
 };
 
-// ✅ ✅ 本日のリマインド
+// ✅ ✅ 淡い黄色ポップアップ
 function showTodayReminder(){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -97,15 +94,36 @@ function showTodayReminder(){
   });
 
   if(todayList.length > 0){
-    let msg = "本日の来客があります\n\n";
+
+    let msg = "本日の来客があります<br><br>";
 
     todayList.forEach(d => {
-      msg += `・${d.customer}\n`;
-      msg += `　${d.rawDate}\n`;
-      msg += `　${d.room || ""}\n\n`;
+      msg += `・${d.customer}<br>`;
+      msg += `　${d.rawDate}<br>`;
+      msg += `　${d.room || ""}<br><br>`;
     });
 
-    alert(msg);
+    let popup = document.createElement("div");
+
+    popup.style.position = "fixed";
+    popup.style.top = "20%";
+    popup.style.left = "50%";
+    popup.style.transform = "translate(-50%, -50%)";
+    popup.style.background = "#fff3cd";  // ✅ 淡い黄色
+    popup.style.color = "#000";         // ✅ 黒文字
+    popup.style.padding = "20px";
+    popup.style.border = "1px solid #ccc";
+    popup.style.borderRadius = "8px";
+    popup.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+    popup.style.zIndex = "9999";
+
+    popup.innerHTML = `
+      <div>${msg}</div>
+      <button onclick="this.parentElement.remove()" 
+        style="margin-top:10px;padding:5px 10px;">OK</button>
+    `;
+
+    document.body.appendChild(popup);
   }
 }
 
@@ -154,17 +172,9 @@ function display(mode){
     let dDate = new Date(d.date);
     dDate.setHours(0,0,0,0);
 
-    if(mode === 'today'){
-      return dDate.toDateString() === today.toDateString();
-    }
-
-    if(mode === 'future'){
-      return dDate >= today;
-    }
-
-    if(mode === 'past'){
-      return dDate < today;
-    }
+    if(mode === 'today') return dDate.toDateString() === today.toDateString();
+    if(mode === 'future') return dDate >= today;
+    if(mode === 'past') return dDate < today;
 
     return true;
   });
@@ -202,3 +212,4 @@ function exportJSON(){
 
 </body>
 </html>
+``
