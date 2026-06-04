@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>工場見学予定入力</title>
+<title>業務アシスタント</title>
 
 <style>
 body {
@@ -51,7 +51,7 @@ textarea {
 
 <body>
 
-<h2>工場見学予定 入力</h2>
+<h2>業務アシスタント</h2>
 
 <textarea id="mailtext" rows="10" placeholder="ここにメール内容を貼り付け"></textarea>
 <br>
@@ -68,15 +68,46 @@ textarea {
 <script>
 let data = [];
 
-// ✅ JSON読み込み
+// ✅ ページ読み込み
 window.onload = function(){
   fetch("visit_data.json")
     .then(res => res.json())
     .then(json => {
       data = json;
+
       display('future');
+
+      // ✅ ✅ 本日の予定チェック（ここが新機能）
+      showTodayReminder();
     });
 };
+
+// ✅ ✅ 本日のリマインド
+function showTodayReminder(){
+  let today = new Date();
+  today.setHours(0,0,0,0);
+
+  let todayList = data.filter(d => {
+    if(!d.date) return false;
+
+    let dDate = new Date(d.date);
+    dDate.setHours(0,0,0,0);
+
+    return dDate.toDateString() === today.toDateString();
+  });
+
+  if(todayList.length > 0){
+    let msg = "本日の来客があります\n\n";
+
+    todayList.forEach(d => {
+      msg += `・${d.customer}\n`;
+      msg += `　${d.rawDate}\n`;
+      msg += `　${d.room || ""}\n\n`;
+    });
+
+    alert(msg);
+  }
+}
 
 // ✅ 登録
 function parseMail(){
@@ -101,11 +132,10 @@ function parseMail(){
   });
 
   display('future');
-
   document.getElementById("mailtext").value = "";
 }
 
-// ✅ 削除（修正不要）
+// ✅ 削除
 function deleteRecord(index){
   if(confirm("削除しますか？")){
     data.splice(index, 1);
@@ -113,7 +143,7 @@ function deleteRecord(index){
   }
 }
 
-// ✅ 表示（ここが修正ポイント）
+// ✅ 表示
 function display(mode){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -143,9 +173,8 @@ function display(mode){
 
   let html = "";
 
-  // ✅ ✅ 修正ポイント（ここ重要）
   filtered.forEach(d => {
-    let index = data.indexOf(d);   // ←これがバグ修正
+    let index = data.indexOf(d);
 
     html += `
       <div class="card">
@@ -162,7 +191,7 @@ function display(mode){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ JSON表示（コピー用）
+// ✅ JSON表示
 function exportJSON(){
   let dataStr = JSON.stringify(data, null, 2);
 
