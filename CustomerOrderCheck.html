@@ -11,23 +11,23 @@ body {
   font-size: 13px;
 }
 
-/* ===== 入力欄 ===== */
+/* ========= 入力 ========= */
 input {
   background:#fff8cc;
   border:1px solid #ccc;
   padding:3px;
 
-  text-align:left;              /* ✅ 左寄せ */
-  outline:none;                 /* ✅ 横線除去① */
-  box-shadow:none;              /* ✅ 横線除去② */
-  -webkit-appearance:none;      /* ✅ iPhone対策 */
+  text-align:left;
+  outline:none;
+  box-shadow:none;
+  -webkit-appearance:none;
 }
 
 /* 客先 */
 #customerCode { width:110px; }
 #personName   { width:120px; }
 
-/* 部品№ */
+/* 部品番号 */
 input.code {
   width:80px;
   text-align:left;
@@ -39,16 +39,24 @@ input.qty {
   text-align:left;
 }
 
-/* テーブル */
+/* ========= テーブル ========= */
 table {
+  border:none !important;
   border-collapse: collapse;
   width:100%;
 }
 
-/* ✅ 横線完全削除 */
+/* ✅ 行の完全リセット */
+tr {
+  border:none !important;
+  border-bottom:1px solid #eee;  /* ★薄い区切り線 */
+  margin-bottom:2px;
+}
+
+/* ✅ セルも完全削除 */
 td {
-  border:none;
-  padding:4px 2px;
+  border:none !important;
+  padding:3px 2px;
 }
 
 /* ラベル */
@@ -57,7 +65,7 @@ label {
   font-weight:bold;
 }
 
-/* ===== 候補 ===== */
+/* ========= 候補 ========= */
 .suggestBox {
   position:absolute;
   background:#fff;
@@ -78,7 +86,7 @@ label {
   background:#d0ebff;
 }
 
-/* ===== スマホ ===== */
+/* ========= スマホ ========= */
 @media screen and (max-width:600px){
 
   body {
@@ -91,7 +99,6 @@ label {
     width:auto !important;
     font-size:13px;
     text-align:left;
-
     outline:none;
     box-shadow:none;
     -webkit-appearance:none;
@@ -105,17 +112,17 @@ label {
 
   .specInput { width:130px !important; }
 
-  /* コンパクト表示 */
   td {
     display:flex;
     align-items:center;
     gap:5px;
     padding:3px 0;
-    border:none;
+    border:none !important;
   }
 
   tr {
-    margin-bottom:4px;
+    border-bottom:1px solid #eee;
+    margin-bottom:3px;
   }
 
   /* ボタン */
@@ -158,7 +165,7 @@ label {
 <script>
 let einsData = [];
 
-/* CSV */
+/* CSV読込 */
 fetch('Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
   einsData = lines.map(l=>{
@@ -191,7 +198,7 @@ for(let i=0;i<20;i++){
   document.getElementById('rows').appendChild(tr);
 }
 
-/* 部品番号 */
+/* 部品番号入力 */
 function checkRow(el){
   const tr = el.closest('tr');
   const hit = einsData.find(d=>d.code===el.value);
@@ -202,7 +209,7 @@ function checkRow(el){
   }
 }
 
-/* 検索 */
+/* 規格検索 */
 function showSuggest(el){
   const key = el.value.toLowerCase();
   const box = el.nextElementSibling;
