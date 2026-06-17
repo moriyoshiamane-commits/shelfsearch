@@ -9,10 +9,9 @@
 body {
   font-family: sans-serif;
   font-size: 13px;
-  background: #fff;
 }
 
-/* ===== PCレイアウト ===== */
+/* ===== PC ===== */
 .container { display:flex; width:1400px; margin-left:10px; }
 .main { width:1050px; }
 .side {
@@ -20,72 +19,73 @@ body {
   border-left:1px solid #999; background:#fafafa;
 }
 
-/* ===== 入力強調 ===== */
-input {
-  background:#fff8cc;
-  border:2px solid #f0c000;
-}
-input:focus {
-  background:#fff2a8;
-  border:2px solid #ff9900;
-}
-
-/* ✅ サイズ最適化 */
-input.code { width:120px; text-align:center; }
-input.qty  { width:80px; text-align:right; }
-
-/* ===== テーブル ===== */
 table { border-collapse:collapse; width:100%; }
 th, td { border:1px solid #999; padding:3px; }
 th { background:#eee; }
 
-tr.ok { background:#c8f7c5; }
-tr.ng { background:#f7c5c5; }
+/* 入力色 */
+input {
+  background:#fff8cc;
+  border:2px solid #f0c000;
+}
+input:focus { background:#fff2a8; }
 
-/* ===== 候補表示 ===== */
+/* サイズ */
+#customerCode { width:120px; }
+#personName { width:140px; }
+
+input.code { width:110px; text-align:center; }
+input.qty { width:60px; text-align:right; }
+
+/* ===== 候補（モノタロ風） ===== */
 .suggestBox {
   position:absolute;
   background:#fff;
   border:2px solid #333;
-  width:95%;
-  max-height:180px;
+  width:300px;
+  max-height:200px;
   overflow-y:auto;
   z-index:99999;
 }
 
 .suggestItem {
-  padding:10px;
-  border-bottom:1px solid #ccc;
+  padding:8px;
+  border-bottom:1px solid #ddd;
+  font-size:14px;
+  line-height:1.3;
 }
 
 .suggestItem:hover {
-  background:#d0ebff;
+  background:#cce5ff;
 }
 
-/* =================================
-   ✅ スマホ最適化
-================================= */
+/* ===== スマホ ===== */
 @media screen and (max-width:600px){
 
   body {
-    overflow-x:hidden;
+    font-size:14px;
     margin:5px;
-    font-size:16px;
+    overflow-x:hidden;
     padding-bottom:100px;
   }
 
   .container { display:block; width:100%; margin:0; }
   .main,.side { width:100%; margin:0; padding:0; border:none; }
 
-  input { width:100%!important; height:45px; }
-
-  /* ✅ 数量は小さく固定 */
-  input.qty {
-    width:80px !important;
-    display:inline-block;
+  /* ✅ 入力は広げない */
+  input {
+    width:auto !important;
   }
 
-  /* ✅ テーブル縦 */
+  #customerCode { width:120px !important; }
+  #personName { width:140px !important; }
+
+  input.code { width:110px !important; }
+  input.qty { width:60px !important; }
+
+  td.spec input { width:160px !important; }
+
+  /* 縦レイアウト */
   table,thead,tbody,tr,th,td {
     display:block;
     width:100%;
@@ -95,28 +95,28 @@ tr.ng { background:#f7c5c5; }
 
   tr {
     border:1px solid #ccc;
-    margin-bottom:10px;
-    padding:8px;
+    margin-bottom:8px;
+    padding:6px;
   }
 
   td { border:none; }
 
-  td.spec { position:relative; } /* ←重要 */
+  td.spec { position:relative; }
 
-  td.no::before    { content:"No："; }
-  td.code::before  { content:"部品№："; }
-  td.name::before  { content:"品名："; }
-  td.spec::before  { content:"規格："; }
+  td.no::before { content:"No："; }
+  td.code::before { content:"部品№："; }
+  td.name::before { content:"品名："; }
+  td.spec::before { content:"規格："; }
   td.shelf::before { content:"棚番："; }
-  td.qty::before   { content:"数量："; }
+  td.qty::before { content:"数量："; }
 
   td::before {
     font-weight:bold;
+    width:80px;
     display:inline-block;
-    width:90px;
   }
 
-  /* ✅ 追従ボタン */
+  /* 固定ボタン */
   .fixed-button {
     position:fixed;
     bottom:10px;
@@ -127,8 +127,14 @@ tr.ng { background:#f7c5c5; }
 
   button {
     width:100%;
-    height:60px;
-    font-size:20px;
+    height:50px;
+    font-size:16px;
+  }
+
+  /* 候補をスマホ用に広く */
+  .suggestBox {
+    width:90%;
+    max-height:220px;
   }
 }
 </style>
@@ -161,12 +167,10 @@ tr.ng { background:#f7c5c5; }
 </div>
 
 <div class="side">
-
 <h3>規格検索</h3>
 <input id="specSearch">
 <button onclick="searchBySpec()">検索</button>
 <div id="specResults"></div>
-
 </div>
 </div>
 
@@ -176,18 +180,17 @@ tr.ng { background:#f7c5c5; }
 
 <script>
 let einsData = [];
-let lastFocusedCodeInput = null;
 
-/* CSV読込 */
+/* CSV読み込み */
 fetch('Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
   einsData = lines.map(l=>{
-    const c = l.split(',');
+    const c=l.split(',');
     return {
       code:(c[0]||'').padStart(6,'0'),
-      name:(c[1]||''),
-      spec:(c[2]||''),
-      shelf:(c[4]||'')
+      name:c[1]||'',
+      spec:c[2]||'',
+      shelf:c[4]||''
     };
   });
 });
@@ -200,9 +203,7 @@ for(let i=1;i<=20;i++){
 <td class="no">${i}</td>
 
 <td class="code">
-<input class="code"
-onfocus="lastFocusedCodeInput=this"
-onblur="checkRow(this)">
+<input class="code">
 </td>
 
 <td class="name"></td>
@@ -222,22 +223,7 @@ onblur="checkRow(this)">
   document.getElementById('rows').appendChild(tr);
 }
 
-/* 部品№→表示 */
-function checkRow(el){
-  const tr=el.closest('tr');
-  const hit=einsData.find(d=>d.code===el.value);
-
-  if(hit){
-    tr.className='ok';
-    tr.querySelector('.name').textContent=hit.name;
-    tr.querySelector('.spec input').value=hit.spec;
-    tr.querySelector('.shelf').textContent=hit.shelf;
-  }else{
-    tr.className='ng';
-  }
-}
-
-/* ✅ 候補表示（改良版） */
+/* ✅ 候補（モノタロ式） */
 function showSuggest(el){
   const key=el.value.toLowerCase();
   const box=el.nextElementSibling;
@@ -248,21 +234,24 @@ function showSuggest(el){
   einsData.filter(d=>
     d.spec.toLowerCase().includes(key) ||
     d.name.toLowerCase().includes(key)
-  ).slice(0,5).forEach(d=>{
+  ).slice(0,6).forEach(d=>{
 
     const div=document.createElement('div');
     div.className='suggestItem';
 
-    div.innerHTML=`
-      <b>${d.name}</b><br>
-      規格：${d.spec}<br>
-      棚番：${d.shelf}
-    `;
+    div.innerHTML = `${d.name}（${d.spec}）`;
 
+    /* ✅ ここが一番重要（完全置き換え） */
     div.onclick=()=>{
       const tr=el.closest('tr');
-      tr.querySelector('.code input').value=d.code;
-      tr.querySelector('.code input').blur();
+
+      tr.querySelector('.code input').value = d.code;
+      tr.querySelector('.spec input').value = d.spec;
+      tr.querySelector('.name').textContent = d.name;
+      tr.querySelector('.shelf').textContent = d.shelf;
+
+      tr.className = "ok";
+
       box.innerHTML='';
     };
 
@@ -281,22 +270,15 @@ function searchBySpec(){
     d.name.toLowerCase().includes(key)
   ).forEach(d=>{
     const div=document.createElement('div');
-    div.innerHTML=
+    div.innerHTML =
       `${d.code} ${d.name}<br>
        規格：${d.spec}<br>
-       棚番：${d.shelf}
-       <button onclick="setPartNo('${d.code}')">選択</button>`;
+       棚番：${d.shelf}`;
     box.appendChild(div);
   });
 }
 
-function setPartNo(code){
-  if(lastFocusedCodeInput){
-    lastFocusedCodeInput.value=code;
-    lastFocusedCodeInput.blur();
-  }
-}
-
+/* 出力 */
 function copyForAS400(){
   let out='';
   document.querySelectorAll('tr.ok').forEach(tr=>{
