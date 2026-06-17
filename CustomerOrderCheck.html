@@ -11,12 +11,16 @@ body {
   font-size: 13px;
 }
 
-/* ===== 入力 ===== */
+/* ===== 入力欄 ===== */
 input {
   background:#fff8cc;
   border:1px solid #ccc;
   padding:3px;
-  text-align:left;   /* ★全部左寄せ */
+
+  text-align:left;              /* ✅ 左寄せ */
+  outline:none;                 /* ✅ 横線除去① */
+  box-shadow:none;              /* ✅ 横線除去② */
+  -webkit-appearance:none;      /* ✅ iPhone対策 */
 }
 
 /* 客先 */
@@ -26,13 +30,13 @@ input {
 /* 部品№ */
 input.code {
   width:80px;
-  text-align:left;   /* ★左寄せ */
+  text-align:left;
 }
 
 /* 数量 */
 input.qty {
   width:50px;
-  text-align:left;   /* ★左寄せ */
+  text-align:left;
 }
 
 /* テーブル */
@@ -41,8 +45,9 @@ table {
   width:100%;
 }
 
+/* ✅ 横線完全削除 */
 td {
-  border-bottom:none;   /* ★横線削除 */
+  border:none;
   padding:4px 2px;
 }
 
@@ -85,7 +90,11 @@ label {
   input {
     width:auto !important;
     font-size:13px;
-    text-align:left;  /* ★統一 */
+    text-align:left;
+
+    outline:none;
+    box-shadow:none;
+    -webkit-appearance:none;
   }
 
   #customerCode { width:110px !important; }
@@ -96,12 +105,13 @@ label {
 
   .specInput { width:130px !important; }
 
-  /* コンパクト配置 */
+  /* コンパクト表示 */
   td {
     display:flex;
     align-items:center;
     gap:5px;
     padding:3px 0;
+    border:none;
   }
 
   tr {
@@ -181,7 +191,7 @@ for(let i=0;i<20;i++){
   document.getElementById('rows').appendChild(tr);
 }
 
-/* 部品入力 */
+/* 部品番号 */
 function checkRow(el){
   const tr = el.closest('tr');
   const hit = einsData.find(d=>d.code===el.value);
@@ -192,7 +202,7 @@ function checkRow(el){
   }
 }
 
-/* 検索（モノタロ式） */
+/* 検索 */
 function showSuggest(el){
   const key = el.value.toLowerCase();
   const box = el.nextElementSibling;
@@ -204,7 +214,7 @@ function showSuggest(el){
   einsData.filter(d =>
     d.spec.toLowerCase().includes(key) ||
     d.name.toLowerCase().includes(key)
-  ).slice(0,6).forEach(d => {
+  ).slice(0,6).forEach(d=>{
 
     const div = document.createElement('div');
     div.className = 'suggestItem';
@@ -214,12 +224,11 @@ function showSuggest(el){
     div.onclick = ()=>{
       const tr = el.closest('tr');
 
-      /* ✅ 完全置き換え */
       tr.querySelector('.code').value = d.code;
       tr.querySelector('.specInput').value = d.spec;
       tr.querySelector('.name').textContent = d.name;
 
-      box.innerHTML = '';
+      box.innerHTML='';
     };
 
     box.appendChild(div);
@@ -228,7 +237,7 @@ function showSuggest(el){
 
 /* 出力 */
 function copyForAS400(){
-  let out = '';
+  let out='';
   document.querySelectorAll('tr').forEach(tr=>{
     const c = tr.querySelector('.code').value;
     const q = tr.querySelector('.qty').value;
