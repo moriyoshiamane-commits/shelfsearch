@@ -12,7 +12,7 @@ body {
   background: #fff;
 }
 
-/* ===== PC従来 ===== */
+/* ===== PCレイアウト ===== */
 .container { display:flex; width:1400px; margin-left:10px; }
 .main { width:1050px; }
 .side {
@@ -20,33 +20,47 @@ body {
   border-left:1px solid #999; background:#fafafa;
 }
 
-table { border-collapse:collapse; width:100%; }
-th, td { border:1px solid #999; padding:3px; }
-th { background:#eee; }
-
-/* ✅ 入力欄わかりやすく */
+/* ===== 入力強調 ===== */
 input {
   background:#fff8cc;
   border:2px solid #f0c000;
 }
-
 input:focus {
   background:#fff2a8;
   border:2px solid #ff9900;
 }
 
-/* サイズ調整 */
+/* ✅ サイズ最適化 */
 input.code { width:120px; text-align:center; }
 input.qty  { width:80px; text-align:right; }
 
-td.no    { width:40px; text-align:center; }
-td.code  { width:120px; }
-td.name  { width:200px; }
-td.spec  { width:250px; }
-td.shelf { width:120px; }
+/* ===== テーブル ===== */
+table { border-collapse:collapse; width:100%; }
+th, td { border:1px solid #999; padding:3px; }
+th { background:#eee; }
 
 tr.ok { background:#c8f7c5; }
 tr.ng { background:#f7c5c5; }
+
+/* ===== 候補表示 ===== */
+.suggestBox {
+  position:absolute;
+  background:#fff;
+  border:2px solid #333;
+  width:95%;
+  max-height:180px;
+  overflow-y:auto;
+  z-index:99999;
+}
+
+.suggestItem {
+  padding:10px;
+  border-bottom:1px solid #ccc;
+}
+
+.suggestItem:hover {
+  background:#d0ebff;
+}
 
 /* =================================
    ✅ スマホ最適化
@@ -65,6 +79,13 @@ tr.ng { background:#f7c5c5; }
 
   input { width:100%!important; height:45px; }
 
+  /* ✅ 数量は小さく固定 */
+  input.qty {
+    width:80px !important;
+    display:inline-block;
+  }
+
+  /* ✅ テーブル縦 */
   table,thead,tbody,tr,th,td {
     display:block;
     width:100%;
@@ -80,6 +101,8 @@ tr.ng { background:#f7c5c5; }
 
   td { border:none; }
 
+  td.spec { position:relative; } /* ←重要 */
+
   td.no::before    { content:"No："; }
   td.code::before  { content:"部品№："; }
   td.name::before  { content:"品名："; }
@@ -93,6 +116,7 @@ tr.ng { background:#f7c5c5; }
     width:90px;
   }
 
+  /* ✅ 追従ボタン */
   .fixed-button {
     position:fixed;
     bottom:10px;
@@ -106,19 +130,6 @@ tr.ng { background:#f7c5c5; }
     height:60px;
     font-size:20px;
   }
-}
-
-/* 候補表示 */
-.suggestBox {
-  border:1px solid #999;
-  background:#fff;
-  max-height:150px;
-  overflow:auto;
-}
-
-.suggestItem {
-  padding:6px;
-  border-bottom:1px solid #ccc;
 }
 </style>
 </head>
@@ -167,7 +178,7 @@ tr.ng { background:#f7c5c5; }
 let einsData = [];
 let lastFocusedCodeInput = null;
 
-/* CSV */
+/* CSV読込 */
 fetch('Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
   einsData = lines.map(l=>{
@@ -196,8 +207,8 @@ onblur="checkRow(this)">
 
 <td class="name"></td>
 
-<td class="spec">
-<input class="specInput" oninput="showSuggest(this)">
+<td class="spec" style="position:relative;">
+<input oninput="showSuggest(this)">
 <div class="suggestBox"></div>
 </td>
 
@@ -211,7 +222,7 @@ onblur="checkRow(this)">
   document.getElementById('rows').appendChild(tr);
 }
 
-/* 部品検索 */
+/* 部品№→表示 */
 function checkRow(el){
   const tr=el.closest('tr');
   const hit=einsData.find(d=>d.code===el.value);
@@ -226,7 +237,7 @@ function checkRow(el){
   }
 }
 
-/* ✅ 候補表示（今回の核心） */
+/* ✅ 候補表示（改良版） */
 function showSuggest(el){
   const key=el.value.toLowerCase();
   const box=el.nextElementSibling;
@@ -241,7 +252,12 @@ function showSuggest(el){
 
     const div=document.createElement('div');
     div.className='suggestItem';
-    div.innerHTML=`${d.name}<br>規格：${d.spec}`;
+
+    div.innerHTML=`
+      <b>${d.name}</b><br>
+      規格：${d.spec}<br>
+      棚番：${d.shelf}
+    `;
 
     div.onclick=()=>{
       const tr=el.closest('tr');
