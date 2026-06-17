@@ -5,56 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>アインツ 商品確認</title>
 
-<!-- ✅ ここが重要（auth.jsはheadで実行） -->
+<!-- ✅ パスワードを最初に実行（重要） -->
 <script src="auth.js"></script>
 
 <style>
 body {
   font-family: sans-serif;
-  font-size:13px;
-  margin:5px;
+  font-size: 13px;
 }
 
 /* 入力 */
 input {
   background:#fff8cc;
-  border:1px solid #ddd;
+  border:1px solid #ccc;
   padding:3px;
   text-align:left;
 }
 
-/* サイズ */
+/* 客先 */
 #customerCode { width:110px; }
 #personName   { width:120px; }
-.input-code   { width:80px; }
-.input-qty    { width:50px; }
-.input-spec   { width:140px; }
 
-/* 行 */
-.row {
-  padding:8px 0;
-  margin-bottom:6px;
+/* 部品№ */
+input.code {
+  width:80px;
 }
 
-/* 区切り */
-.row::after {
-  content:"";
-  display:block;
-  height:1px;
-  background:#e5e5e5;
-  margin-top:6px;
+/* 数量 */
+input.qty {
+  width:50px;
 }
 
-/* 横並び */
-.item {
-  display:flex;
-  align-items:center;
-  gap:5px;
-  margin-bottom:2px;
+/* テーブル */
+table {
+  border-collapse: collapse;
+  width:100%;
+}
+
+td {
+  border-bottom:none;
+  padding:4px 2px;
 }
 
 /* ラベル */
-.label {
+label {
   width:50px;
   font-weight:bold;
 }
@@ -67,7 +61,7 @@ input {
   width:200px;
   max-height:180px;
   overflow-y:auto;
-  z-index:9999;
+  z-index:99999;
 }
 
 .suggestItem {
@@ -104,7 +98,9 @@ button {
 客先名：<input id="customerName"><br>
 担当者名：<input id="personName"><br><br>
 
-<div id="rows"></div>
+<table>
+<tbody id="rows"></tbody>
+</table>
 
 <textarea id="output" rows="4"></textarea>
 
@@ -115,8 +111,8 @@ button {
 <script>
 let einsData = [];
 
-/* CSV */
-fetch('Eins.csv').then(r=>r.text()).then(t=>{
+/* ✅ CSV読み込み（確実版） */
+fetch('./Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
   einsData = lines.map(l=>{
     const c = l.split(',');
@@ -129,84 +125,73 @@ fetch('Eins.csv').then(r=>r.text()).then(t=>{
 });
 
 /* 行生成 */
-const container = document.getElementById('rows');
-
 for(let i=0;i<20;i++){
+  const tr=document.createElement('tr');
 
-  const row = document.createElement('div');
-  row.className = "row";
+  tr.innerHTML = `
+<td><label>部品</label><input class="code" maxlength="6" onblur="checkRow(this)"></td>
 
-  row.innerHTML = `
-  <div class="item">
-    <span class="label">部品</span>
-    <input class="input-code" maxlength="6" onblur="checkRow(this)">
-  </div>
+<td><label>規格</label>
+<input class="specInput" oninput="showSuggest(this)">
+<div class="suggestBox"></div>
+</td>
 
-  <div class="item" style="position:relative;">
-    <span class="label">規格</span>
-    <input class="input-spec" oninput="showSuggest(this)">
-    <div class="suggestBox"></div>
-  </div>
+<td><label>品名</label><span class="name"></span></td>
 
-  <div class="item">
-    <span class="label">品名</span>
-    <span class="name"></span>
-  </div>
+<td><label>数量</label><input class="qty" maxlength="3"></td>
+`;
 
-  <div class="item">
-    <span class="label">数量</span>
-    <input class="input-qty" maxlength="3">
-  </div>
-  `;
-
-  container.appendChild(row);
+  document.getElementById('rows').appendChild(tr);
 }
 
-/* 部品番号入力 */
+/* ✅ 部品番号 → 自動表示 */
 function checkRow(el){
-  const row = el.closest('.row');
-  const hit = einsData.find(d=>d.code===el.value);
+  const tr = el.closest('tr');
+  const hit = einsData.find(d => d.code === el.value);
 
   if(hit){
-    row.querySelector('.name').textContent = hit.name;
-    row.querySelector('.input-spec').value = hit.spec;
+    tr.querySelector('.name').textContent = hit.name;
+    tr.querySelector('.specInput').value = hit.spec;
+  } else {
+    tr.querySelector('.name').textContent = "";
+    tr.querySelector('.specInput').value = "";
   }
 }
 
-/* 検索 */
+/* ✅ 規格検索 */
 function showSuggest(el){
   const key = el.value.toLowerCase();
   const box = el.nextElementSibling;
 
-  box.innerHTML='';
+  box.innerHTML = '';
 
   if(!key) return;
 
   einsData.filter(d =>
     d.spec.toLowerCase().includes(key) ||
     d.name.toLowerCase().includes(key)
-  ).slice(0,6).forEach(d=>{
+  ).slice(0,6).forEach(d => {
 
     const div = document.createElement('div');
-    div.className='suggestItem';
+    div.className = 'suggestItem';
 
     div.textContent = `${d.name}（${d.spec}）`;
 
     div.onclick = ()=>{
-      const row = el.closest('.row');
+      const tr = el.closest('tr');
 
-      row.querySelector('.input-code').value = d.code;
-      row.querySelector('.input-spec').value = d.spec;
-      row.querySelector('.name').textContent = d.name;
+      tr.querySelector('.code').value = d.code;
+      tr.querySelector('.specInput').value = d.spec;
+      tr.querySelector('.name').textContent = d.name;
 
-      box.innerHTML='';
+      box.innerHTML = '';
     };
 
     box.appendChild(div);
   });
 }
 
-/* ✅ コピー機能（完成版） */
+/* ✅ コピー（営業用 完全版） */
 function copyForAS400(){
 
   let out = '';
@@ -214,22 +199,25 @@ function copyForAS400(){
   const cus = document.getElementById('customerCode').value;
   const person = document.getElementById('personName').value;
 
+  /* ヘッダ */
   if(cus) out += "客先№：" + cus + "\n";
   if(person) out += "担当：" + person + "\n";
 
   out += "\n";
 
-  document.querySelectorAll('.row').forEach(r=>{
-    const c = r.querySelector('.input-code').value;
-    const q = r.querySelector('.input-qty').value;
-    const n = r.querySelector('.name').textContent;
-    const s = r.querySelector('.input-spec').value;
+  /* 明細 */
+  document.querySelectorAll('tr').forEach(tr=>{
+    const c = tr.querySelector('.code').value;
+    const q = tr.querySelector('.qty').value;
+    const n = tr.querySelector('.name').textContent;
+    const s = tr.querySelector('.specInput').value;
 
     if(c && q){
       out += `${c}\t${q}\t${n}\t${s}\n`;
     }
   });
 
+  /* クリップボード */
   navigator.clipboard.writeText(out).then(()=>{
     alert("コピーしました");
   });
@@ -238,4 +226,3 @@ function copyForAS400(){
 
 </body>
 </html>
-``
