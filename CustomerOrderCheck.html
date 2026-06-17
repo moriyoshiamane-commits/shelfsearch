@@ -6,6 +6,81 @@
 <title>アインツ 商品確認</title>
 
 <style>
+
+/* ===== スマホ最適化 ===== */
+@media screen and (max-width: 600px) {
+
+  /* 横スクロール禁止 */
+  body {
+    overflow-x: hidden;
+    margin: 5px;
+    font-size: 16px;
+  }
+
+  /* 横並び → 縦並び */
+  .container {
+    display: block;
+    width: 100%;
+    margin: 0;
+  }
+
+  .main {
+    width: 100%;
+  }
+
+  .side {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    margin-top: 15px;
+  }
+
+  /* 入力欄を大きく */
+  input {
+    width: 100% !important;
+    height: 40px;
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  input.code {
+    width: 100% !important;
+  }
+
+  input.qty {
+    width: 100% !important;
+  }
+
+  /* ボタンを大きく */
+  button {
+    width: 100%;
+    height: 50px;
+    font-size: 18px;
+    margin-top: 10px;
+  }
+
+  /* テーブル調整 */
+  table {
+    font-size: 12px;
+  }
+
+  td, th {
+    padding: 5px;
+  }
+
+  /* テキストエリア */
+  textarea {
+    width: 100%;
+  }
+
+  /* 結果エリア */
+  .resultBox {
+    max-height: 300px;
+  }
+
+}
+
 body {
   font-family: sans-serif;
   font-size: 13px;
