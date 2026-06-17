@@ -7,7 +7,7 @@
 
 <style>
 
-/* ===== 強制リセット ===== */
+/* ===== 全リセット ===== */
 * {
   margin:0;
   padding:0;
@@ -38,55 +38,53 @@ input {
 #personName   { width:120px; }
 .input-code   { width:80px; }
 .input-qty    { width:50px; }
-.input-spec   { width:140px; }
+.input-spec   { width:140px; position:relative; }
 
 /* ===== 行 ===== */
 .row {
-  position:relative;
-  padding:8px 0 6px 0;
+  padding:8px 0;
+  margin-bottom:6px;
   background:#fff;
+  position:relative;
 }
 
-/* ✅ 元の線を白で完全に潰す */
-.row::before {
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-
-  height:3px;           /* 少し太めで確実に隠す */
-  background:#ffffff;   /* ←白で上書き */
-  z-index:10;
-}
-
-/* ✅ 新しい区切り線 */
+/* ✅ 仕切り（薄い線） */
 .row::after {
   content:"";
   position:absolute;
   left:10px;
   right:10px;
   bottom:0;
-
   height:1px;
-  background:#e5e5e5;   /* 薄い線 */
-  z-index:11;
+  background:#e5e5e5;
 }
 
-/* 項目 */
+/* ===== 項目 ===== */
 .item {
   display:flex;
   align-items:center;
   gap:5px;
-  margin-bottom:2px;
+  margin-bottom:3px;
   position:relative;
-  z-index:20;
 }
 
 /* ラベル */
 .label {
   width:50px;
   font-weight:bold;
+}
+
+/* ===== ★ここが最重要：線を直接潰す ===== */
+
+/* 規格入力の下に白を置く */
+.spec-cover {
+  position:absolute;
+  left:50px;         /* ラベル分ずらす */
+  right:0;
+  height:4px;
+  bottom:-1px;
+  background:#fff;
+  pointer-events:none;
 }
 
 /* ===== 候補 ===== */
@@ -129,8 +127,6 @@ button {
 
 <body>
 
-<script src="auth.js"></script>
-
 <h2>アインツ 商品確認</h2>
 
 客先№：<input id="customerCode"><br>
@@ -172,13 +168,16 @@ for(let i=0;i<20;i++){
   row.innerHTML = `
   <div class="item">
     <span class="label">部品</span>
-    <input class="input-code" maxlength="6"
-           onblur="checkRow(this)">
+    <input class="input-code" maxlength="6" onblur="checkRow(this)">
   </div>
 
-  <div class="item" style="position:relative;">
+  <div class="item">
     <span class="label">規格</span>
     <input class="input-spec" oninput="showSuggest(this)">
+    
+    <!-- ✅ 線を消す専用 -->
+    <div class="spec-cover"></div>
+
     <div class="suggestBox"></div>
   </div>
 
@@ -210,7 +209,7 @@ function checkRow(el){
 /* 検索 */
 function showSuggest(el){
   const key = el.value.toLowerCase();
-  const box = el.nextElementSibling;
+  const box = el.parentElement.querySelector('.suggestBox');
 
   box.innerHTML='';
 
@@ -256,3 +255,4 @@ function copyForAS400(){
 
 </body>
 </html>
+``
