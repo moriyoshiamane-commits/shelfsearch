@@ -7,7 +7,7 @@
 
 <style>
 
-/* ===== 全リセット ===== */
+/* ===== 強制リセット ===== */
 * {
   margin:0;
   padding:0;
@@ -17,11 +17,12 @@
   -webkit-appearance:none;
 }
 
-/* ===== ベース ===== */
+/* ===== 基本 ===== */
 body {
   font-family: sans-serif;
   font-size:13px;
   margin:5px;
+  background:#fff;
 }
 
 /* ===== 入力 ===== */
@@ -43,9 +44,10 @@ input {
 .row {
   position:relative;
   padding:8px 0 6px 0;
+  background:#fff;
 }
 
-/* ❗ 元の線を"強制的に消すカバー" */
+/* ✅ 元の線を白で完全に潰す */
 .row::before {
   content:"";
   position:absolute;
@@ -53,9 +55,9 @@ input {
   right:0;
   bottom:0;
 
-  height:4px;
-  background:#fff;   /* ←背景色で上書き */
-  z-index:1;
+  height:3px;           /* 少し太めで確実に隠す */
+  background:#ffffff;   /* ←白で上書き */
+  z-index:10;
 }
 
 /* ✅ 新しい区切り線 */
@@ -67,24 +69,24 @@ input {
   bottom:0;
 
   height:1px;
-  background:#e5e5e5;
-  z-index:2;
+  background:#e5e5e5;   /* 薄い線 */
+  z-index:11;
 }
 
-/* ラベル */
-.label {
-  width:50px;
-  font-weight:bold;
-}
-
-/* 横並び */
+/* 項目 */
 .item {
   display:flex;
   align-items:center;
   gap:5px;
   margin-bottom:2px;
   position:relative;
-  z-index:3;
+  z-index:20;
+}
+
+/* ラベル */
+.label {
+  width:50px;
+  font-weight:bold;
 }
 
 /* ===== 候補 ===== */
@@ -150,7 +152,7 @@ let einsData = [];
 fetch('Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
   einsData = lines.map(l=>{
-    const c = l.split(',');
+    const c=l.split(',');
     return {
       code:(c[0]||'').padStart(6,'0'),
       name:c[1]||'',
@@ -194,7 +196,7 @@ for(let i=0;i<20;i++){
   container.appendChild(row);
 }
 
-/* 部品№チェック */
+/* 部品入力 */
 function checkRow(el){
   const row = el.closest('.row');
   const hit = einsData.find(d=>d.code===el.value);
@@ -220,7 +222,7 @@ function showSuggest(el){
   ).slice(0,6).forEach(d=>{
 
     const div = document.createElement('div');
-    div.className = 'suggestItem';
+    div.className='suggestItem';
 
     div.textContent = `${d.name}（${d.spec}）`;
 
@@ -242,8 +244,8 @@ function showSuggest(el){
 function copyForAS400(){
   let out='';
   document.querySelectorAll('.row').forEach(r=>{
-    const c = r.querySelector('.input-code').value;
-    const q = r.querySelector('.input-qty').value;
+    const c=r.querySelector('.input-code').value;
+    const q=r.querySelector('.input-qty').value;
     if(c && q){
       out += c + "\t" + q + "\n";
     }
