@@ -5,27 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>アインツ 商品確認</title>
 
+<!-- ✅ ここが重要（auth.jsはheadで実行） -->
+<script src="auth.js"></script>
+
 <style>
-
-/* ===== 全リセット ===== */
-* {
-  margin:0;
-  padding:0;
-  border:none;
-  outline:none;
-  box-shadow:none;
-  -webkit-appearance:none;
-}
-
-/* ===== 基本 ===== */
 body {
   font-family: sans-serif;
   font-size:13px;
   margin:5px;
-  background:#fff;
 }
 
-/* ===== 入力 ===== */
+/* 入力 */
 input {
   background:#fff8cc;
   border:1px solid #ddd;
@@ -38,34 +28,29 @@ input {
 #personName   { width:120px; }
 .input-code   { width:80px; }
 .input-qty    { width:50px; }
-.input-spec   { width:140px; position:relative; }
+.input-spec   { width:140px; }
 
-/* ===== 行 ===== */
+/* 行 */
 .row {
   padding:8px 0;
   margin-bottom:6px;
-  background:#fff;
-  position:relative;
 }
 
-/* ✅ 仕切り（薄い線） */
+/* 区切り */
 .row::after {
   content:"";
-  position:absolute;
-  left:10px;
-  right:10px;
-  bottom:0;
+  display:block;
   height:1px;
   background:#e5e5e5;
+  margin-top:6px;
 }
 
-/* ===== 項目 ===== */
+/* 横並び */
 .item {
   display:flex;
   align-items:center;
   gap:5px;
-  margin-bottom:3px;
-  position:relative;
+  margin-bottom:2px;
 }
 
 /* ラベル */
@@ -74,20 +59,7 @@ input {
   font-weight:bold;
 }
 
-/* ===== ★ここが最重要：線を直接潰す ===== */
-
-/* 規格入力の下に白を置く */
-.spec-cover {
-  position:absolute;
-  left:50px;         /* ラベル分ずらす */
-  right:0;
-  height:4px;
-  bottom:-1px;
-  background:#fff;
-  pointer-events:none;
-}
-
-/* ===== 候補 ===== */
+/* 候補 */
 .suggestBox {
   position:absolute;
   background:#fff;
@@ -108,7 +80,7 @@ input {
   background:#d0ebff;
 }
 
-/* ===== ボタン ===== */
+/* ボタン */
 .fixed-button {
   position:fixed;
   bottom:10px;
@@ -121,7 +93,6 @@ button {
   height:45px;
   font-size:15px;
 }
-
 </style>
 </head>
 
@@ -148,7 +119,7 @@ let einsData = [];
 fetch('Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
   einsData = lines.map(l=>{
-    const c=l.split(',');
+    const c = l.split(',');
     return {
       code:(c[0]||'').padStart(6,'0'),
       name:c[1]||'',
@@ -171,13 +142,9 @@ for(let i=0;i<20;i++){
     <input class="input-code" maxlength="6" onblur="checkRow(this)">
   </div>
 
-  <div class="item">
+  <div class="item" style="position:relative;">
     <span class="label">規格</span>
     <input class="input-spec" oninput="showSuggest(this)">
-    
-    <!-- ✅ 線を消す専用 -->
-    <div class="spec-cover"></div>
-
     <div class="suggestBox"></div>
   </div>
 
@@ -195,7 +162,7 @@ for(let i=0;i<20;i++){
   container.appendChild(row);
 }
 
-/* 部品入力 */
+/* 部品番号入力 */
 function checkRow(el){
   const row = el.closest('.row');
   const hit = einsData.find(d=>d.code===el.value);
@@ -209,7 +176,7 @@ function checkRow(el){
 /* 検索 */
 function showSuggest(el){
   const key = el.value.toLowerCase();
-  const box = el.parentElement.querySelector('.suggestBox');
+  const box = el.nextElementSibling;
 
   box.innerHTML='';
 
@@ -239,17 +206,33 @@ function showSuggest(el){
   });
 }
 
-/* 出力 */
+/* ✅ コピー機能（完成版） */
 function copyForAS400(){
-  let out='';
+
+  let out = '';
+
+  const cus = document.getElementById('customerCode').value;
+  const person = document.getElementById('personName').value;
+
+  if(cus) out += "客先№：" + cus + "\n";
+  if(person) out += "担当：" + person + "\n";
+
+  out += "\n";
+
   document.querySelectorAll('.row').forEach(r=>{
-    const c=r.querySelector('.input-code').value;
-    const q=r.querySelector('.input-qty').value;
+    const c = r.querySelector('.input-code').value;
+    const q = r.querySelector('.input-qty').value;
+    const n = r.querySelector('.name').textContent;
+    const s = r.querySelector('.input-spec').value;
+
     if(c && q){
-      out += c + "\t" + q + "\n";
+      out += `${c}\t${q}\t${n}\t${s}\n`;
     }
   });
-  document.getElementById('output').value = out;
+
+  navigator.clipboard.writeText(out).then(()=>{
+    alert("コピーしました");
+  });
 }
 </script>
 
