@@ -12,18 +12,19 @@ body {
   background: #fff;
 }
 
-/* ===== PCはそのまま ===== */
+/* ===== PC従来 ===== */
 .container { display:flex; width:1400px; margin-left:10px; }
 .main { width:1050px; }
 .side {
-  width:330px;
-  margin-left:10px;
-  padding-left:10px;
-  border-left:1px solid #999;
-  background:#fafafa;
+  width:330px; margin-left:10px; padding-left:10px;
+  border-left:1px solid #999; background:#fafafa;
 }
 
-/* ===== 入力強調（全体） ===== */
+table { border-collapse:collapse; width:100%; }
+th, td { border:1px solid #999; padding:3px; }
+th { background:#eee; }
+
+/* ✅ 入力欄わかりやすく */
 input {
   background:#fff8cc;
   border:2px solid #f0c000;
@@ -34,42 +35,36 @@ input:focus {
   border:2px solid #ff9900;
 }
 
-/* ===== テーブル ===== */
-table { border-collapse:collapse; width:100%; }
-th, td { border:1px solid #999; padding:3px; }
-th { background:#eee; }
+/* サイズ調整 */
+input.code { width:120px; text-align:center; }
+input.qty  { width:80px; text-align:right; }
 
-/* ===== 結果色 ===== */
+td.no    { width:40px; text-align:center; }
+td.code  { width:120px; }
+td.name  { width:200px; }
+td.spec  { width:250px; }
+td.shelf { width:120px; }
+
 tr.ok { background:#c8f7c5; }
 tr.ng { background:#f7c5c5; }
 
-textarea { width:600px; }
-
-/* =========================================
+/* =================================
    ✅ スマホ最適化
-========================================= */
-@media screen and (max-width: 600px){
+================================= */
+@media screen and (max-width:600px){
 
   body {
     overflow-x:hidden;
     margin:5px;
     font-size:16px;
-    padding-bottom:90px;
+    padding-bottom:100px;
   }
 
   .container { display:block; width:100%; margin:0; }
   .main,.side { width:100%; margin:0; padding:0; border:none; }
-  .side { margin-top:20px; }
 
   input { width:100%!important; height:45px; }
 
-  button {
-    width:100%;
-    height:60px;
-    font-size:20px;
-  }
-
-  /* ✅ テーブルを縦に */
   table,thead,tbody,tr,th,td {
     display:block;
     width:100%;
@@ -80,7 +75,7 @@ textarea { width:600px; }
   tr {
     border:1px solid #ccc;
     margin-bottom:10px;
-    padding:5px;
+    padding:8px;
   }
 
   td { border:none; }
@@ -98,17 +93,32 @@ textarea { width:600px; }
     width:90px;
   }
 
-  textarea { width:100%; }
-
-  /* ✅ 追従ボタン */
   .fixed-button {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-    z-index: 9999;
+    position:fixed;
+    bottom:10px;
+    left:10px;
+    right:10px;
+    z-index:9999;
   }
 
+  button {
+    width:100%;
+    height:60px;
+    font-size:20px;
+  }
+}
+
+/* 候補表示 */
+.suggestBox {
+  border:1px solid #999;
+  background:#fff;
+  max-height:150px;
+  overflow:auto;
+}
+
+.suggestItem {
+  padding:6px;
+  border-bottom:1px solid #ccc;
 }
 </style>
 </head>
@@ -122,12 +132,9 @@ textarea { width:600px; }
 
 <h2>アインツ 商品確認</h2>
 
-客先№：
-<input id="customerCode"><br>
-客先名：
-<input id="customerName"><br>
-担当者名：
-<input id="personName"><br>
+客先№：<input id="customerCode"><br>
+客先名：<input id="customerName"><br>
+担当者名：<input id="personName"><br>
 
 <table>
 <thead>
@@ -152,7 +159,6 @@ textarea { width:600px; }
 </div>
 </div>
 
-<!-- ✅ 常に下にあるボタン -->
 <div class="fixed-button">
 <button onclick="copyForAS400()">コピペ作成</button>
 </div>
@@ -191,20 +197,21 @@ onblur="checkRow(this)">
 <td class="name"></td>
 
 <td class="spec">
-<input oninput="searchInline(this)">
+<input class="specInput" oninput="showSuggest(this)">
+<div class="suggestBox"></div>
 </td>
 
 <td class="shelf"></td>
 
 <td class="qty">
-<input>
+<input class="qty">
 </td>
 `;
 
   document.getElementById('rows').appendChild(tr);
 }
 
-/* 部品№検索 */
+/* 部品検索 */
 function checkRow(el){
   const tr=el.closest('tr');
   const hit=einsData.find(d=>d.code===el.value);
@@ -219,35 +226,50 @@ function checkRow(el){
   }
 }
 
-/* ✅ 規格から検索 */
-function searchInline(el){
+/* ✅ 候補表示（今回の核心） */
+function showSuggest(el){
   const key=el.value.toLowerCase();
-  const hit=einsData.find(d=>
-    d.spec.toLowerCase().includes(key)||
-    d.name.toLowerCase().includes(key)
-  );
+  const box=el.nextElementSibling;
+  box.innerHTML='';
 
-  if(hit){
-    const tr=el.closest('tr');
-    tr.querySelector('.code input').value=hit.code;
-    tr.querySelector('.code input').blur();
-  }
+  if(!key) return;
+
+  einsData.filter(d=>
+    d.spec.toLowerCase().includes(key) ||
+    d.name.toLowerCase().includes(key)
+  ).slice(0,5).forEach(d=>{
+
+    const div=document.createElement('div');
+    div.className='suggestItem';
+    div.innerHTML=`${d.name}<br>規格：${d.spec}`;
+
+    div.onclick=()=>{
+      const tr=el.closest('tr');
+      tr.querySelector('.code input').value=d.code;
+      tr.querySelector('.code input').blur();
+      box.innerHTML='';
+    };
+
+    box.appendChild(div);
+  });
 }
 
-/* 規格検索（右） */
+/* PC検索 */
 function searchBySpec(){
   const key=document.getElementById('specSearch').value.toLowerCase();
   const box=document.getElementById('specResults');
   box.innerHTML='';
 
   einsData.filter(d=>
-    d.spec.toLowerCase().includes(key)||
+    d.spec.toLowerCase().includes(key) ||
     d.name.toLowerCase().includes(key)
   ).forEach(d=>{
     const div=document.createElement('div');
     div.innerHTML=
-      d.code+' '+d.name+
-      `<button onclick="setPartNo('${d.code}')">選択</button>`;
+      `${d.code} ${d.name}<br>
+       規格：${d.spec}<br>
+       棚番：${d.shelf}
+       <button onclick="setPartNo('${d.code}')">選択</button>`;
     box.appendChild(div);
   });
 }
