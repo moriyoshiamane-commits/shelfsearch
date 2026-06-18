@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>アインツ 商品確認</title>
 
-<!-- ✅ パスワードを最初に実行（重要） -->
 <script src="auth.js"></script>
 
 <style>
@@ -14,7 +13,6 @@ body {
   font-size: 13px;
 }
 
-/* 入力 */
 input {
   background:#fff8cc;
   border:1px solid #ccc;
@@ -22,21 +20,12 @@ input {
   text-align:left;
 }
 
-/* 客先 */
 #customerCode { width:110px; }
 #personName   { width:120px; }
 
-/* 部品№ */
-input.code {
-  width:80px;
-}
+input.code { width:80px; }
+input.qty  { width:50px; }
 
-/* 数量 */
-input.qty {
-  width:50px;
-}
-
-/* テーブル */
 table {
   border-collapse: collapse;
   width:100%;
@@ -47,13 +36,11 @@ td {
   padding:4px 2px;
 }
 
-/* ラベル */
 label {
   width:50px;
   font-weight:bold;
 }
 
-/* 候補 */
 .suggestBox {
   position:absolute;
   background:#fff;
@@ -74,7 +61,6 @@ label {
   background:#d0ebff;
 }
 
-/* ボタン */
 .fixed-button {
   position:fixed;
   bottom:10px;
@@ -111,7 +97,7 @@ button {
 <script>
 let einsData = [];
 
-/* ✅ CSV読み込み（確実版） */
+/* CSV */
 fetch('./Eins.csv').then(r=>r.text()).then(t=>{
   const lines = t.split('\n').slice(1);
   einsData = lines.map(l=>{
@@ -144,26 +130,23 @@ for(let i=0;i<20;i++){
   document.getElementById('rows').appendChild(tr);
 }
 
-/* ✅ 部品番号 → 自動表示 */
+/* 部品入力 */
 function checkRow(el){
   const tr = el.closest('tr');
-  const hit = einsData.find(d => d.code === el.value);
+  const hit = einsData.find(d=>d.code===el.value);
 
   if(hit){
     tr.querySelector('.name').textContent = hit.name;
     tr.querySelector('.specInput').value = hit.spec;
-  } else {
-    tr.querySelector('.name').textContent = "";
-    tr.querySelector('.specInput').value = "";
   }
 }
 
-/* ✅ 規格検索 */
+/* 検索 */
 function showSuggest(el){
   const key = el.value.toLowerCase();
   const box = el.nextElementSibling;
 
-  box.innerHTML = '';
+  box.innerHTML='';
 
   if(!key) return;
 
@@ -173,8 +156,7 @@ function showSuggest(el){
   ).slice(0,6).forEach(d => {
 
     const div = document.createElement('div');
-    div.className = 'suggestItem';
-
+    div.className='suggestItem';
     div.textContent = `${d.name}（${d.spec}）`;
 
     div.onclick = ()=>{
@@ -184,28 +166,28 @@ function showSuggest(el){
       tr.querySelector('.specInput').value = d.spec;
       tr.querySelector('.name').textContent = d.name;
 
-      box.innerHTML = '';
+      box.innerHTML='';
     };
 
     box.appendChild(div);
   });
 }
 
-/* ✅ コピー（営業用 完全版） */
+/* ✅ コピー（客先名追加） */
 function copyForAS400(){
 
   let out = '';
 
   const cus = document.getElementById('customerCode').value;
+  const cname = document.getElementById('customerName').value;  // ★追加
   const person = document.getElementById('personName').value;
 
-  /* ヘッダ */
   if(cus) out += "客先№：" + cus + "\n";
+  if(cname) out += "客先名：" + cname + "\n";  // ★ここ追加
   if(person) out += "担当：" + person + "\n";
 
   out += "\n";
 
-  /* 明細 */
   document.querySelectorAll('tr').forEach(tr=>{
     const c = tr.querySelector('.code').value;
     const q = tr.querySelector('.qty').value;
@@ -217,7 +199,6 @@ function copyForAS400(){
     }
   });
 
-  /* クリップボード */
   navigator.clipboard.writeText(out).then(()=>{
     alert("コピーしました");
   });
