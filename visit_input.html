@@ -52,7 +52,7 @@ textarea {
 <body>
 
 <script src="auth.js"></script>
-  
+
 <h2>来社予定</h2>
 
 <textarea id="mailtext" rows="10" placeholder="ここにメール内容を貼り付け"></textarea>
@@ -70,7 +70,7 @@ textarea {
 <script>
 let data = [];
 
-// ✅ ページ読み込み
+// ページ読み込み
 window.onload = function(){
   fetch("visit_data.json")
     .then(res => res.json())
@@ -81,7 +81,7 @@ window.onload = function(){
     });
 };
 
-// ✅ ✅ PC左・スマホ最適ポップ
+// 本日来客ポップアップ
 function showTodayReminder(){
   let today = new Date();
   today.setHours(0,0,0,0);
@@ -107,7 +107,6 @@ function showTodayReminder(){
 
     let popup = document.createElement("div");
 
-    // 共通
     popup.style.position = "fixed";
     popup.style.background = "#fff3cd";
     popup.style.color = "#000";
@@ -117,14 +116,11 @@ function showTodayReminder(){
     popup.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
     popup.style.zIndex = "9999";
 
-    // ✅ PC・スマホ分岐
     if(window.innerWidth > 768){
-      // PC：左固定
       popup.style.top = "120px";
       popup.style.left = "20px";
       popup.style.width = "300px";
     } else {
-      // スマホ：中央＆幅調整
       popup.style.top = "20%";
       popup.style.left = "50%";
       popup.style.transform = "translate(-50%, -50%)";
@@ -134,7 +130,7 @@ function showTodayReminder(){
 
     popup.innerHTML = `
       <div>${msg}</div>
-      <button onclick="this.parentElement.remove()" 
+      <button onclick="this.parentElement.remove()"
         style="margin-top:10px;padding:6px 12px;">OK</button>
     `;
 
@@ -142,18 +138,26 @@ function showTodayReminder(){
   }
 }
 
-// ✅ 登録
+// 登録
 function parseMail(){
+
   let text = document.getElementById("mailtext").value;
 
   let dateText = (text.match(/訪問日時：(.+)/) || ["",""])[1];
   let customer = (text.match(/お客様　：(.+)/) || ["",""])[1];
   let trader = (text.match(/商社様　：(.+)/) || ["",""])[1];
   let staff = (text.match(/営業担当：(.+)/) || ["",""])[1];
-  let room = (text.match(/打合せ室：(.+)/) || ["",""])[1];
+
+  // 挨拶 → お出迎え
+  let welcome = (text.match(/挨拶\s*：(.*)/) || ["",""])[1].trim();
+
+  let room = (text.match(/打合せ室：(.*)/) || ["",""])[1].trim();
 
   let dateMatch = dateText.match(/(\d{4})\/(\d{2})\/(\d{2})/);
-  let dateObj = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : null;
+
+  let dateObj = dateMatch
+    ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`
+    : null;
 
   data.push({
     rawDate: dateText,
@@ -161,44 +165,60 @@ function parseMail(){
     customer: customer,
     trader: trader,
     staff: staff,
+    welcome: welcome,
     room: room
   });
 
   display('future');
+
   document.getElementById("mailtext").value = "";
 }
 
-// ✅ 削除
+// 削除
 function deleteRecord(index){
+
   if(confirm("削除しますか？")){
+
     data.splice(index, 1);
+
     display('future');
   }
 }
 
-// ✅ 表示
+// 表示
 function display(mode){
+
   let today = new Date();
   today.setHours(0,0,0,0);
 
   let filtered = data.filter(d => {
+
     if(!d.date) return false;
 
     let dDate = new Date(d.date);
+
     dDate.setHours(0,0,0,0);
 
-    if(mode === 'today') return dDate.toDateString() === today.toDateString();
-    if(mode === 'future') return dDate >= today;
-    if(mode === 'past') return dDate < today;
+    if(mode === 'today')
+      return dDate.toDateString() === today.toDateString();
+
+    if(mode === 'future')
+      return dDate >= today;
+
+    if(mode === 'past')
+      return dDate < today;
 
     return true;
   });
 
-  filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
+  filtered.sort(
+    (a,b) => new Date(a.date) - new Date(b.date)
+  );
 
   let html = "";
 
   filtered.forEach(d => {
+
     let index = data.indexOf(d);
 
     html += `
@@ -207,8 +227,12 @@ function display(mode){
         ${d.customer}<br>
         商社様：${d.trader || ""}<br>
         担当：${d.staff}<br>
+        お出迎え：${d.welcome || ""}<br>
         打合せ室：${d.room || ""}<br>
-        <button class="delete-button" onclick="deleteRecord(${index})">削除</button>
+        <button class="delete-button"
+          onclick="deleteRecord(${index})">
+          削除
+        </button>
       </div>
     `;
   });
@@ -216,11 +240,13 @@ function display(mode){
   document.getElementById("list").innerHTML = html;
 }
 
-// ✅ JSON表示
+// JSON表示
 function exportJSON(){
+
   let dataStr = JSON.stringify(data, null, 2);
 
   let win = window.open("", "_blank");
+
   win.document.write("<pre>" + dataStr + "</pre>");
 }
 </script>
