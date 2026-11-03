@@ -82,6 +82,7 @@ fetch("BUSDAU.CSV")
       name: cols[1],   // 品名
       spec: cols[2],
       shelf: cols[3]
+      section: cols[4]
     };
   });
 });
@@ -91,6 +92,7 @@ function search() {
   const p = document.getElementById("part").value.trim();
   const s = document.getElementById("spec").value.trim();
   const h = document.getElementById("hinmei").value.trim();   // ←追加
+  const sec = document.getElementById("section").value;
 
   const area = document.getElementById("result");
   area.innerHTML = "";
@@ -98,7 +100,8 @@ function search() {
   const hits = data.filter(d =>
     (!p || d.part.includes(p) || parseInt(d.part,10) === parseInt(p,10)) &&
     (!s || d.spec.toLowerCase().includes(s.toLowerCase())) &&
-    (!h || d.name.includes(h))   // ←追加（曖昧検索）
+    (!h || d.name.includes(h)) && 
+    (!sec || d.section === sec)  // ←追加（曖昧検索）
   );
 
   if (hits.length === 0) {
@@ -112,6 +115,7 @@ function search() {
       部品№：${d.part}<br>
       品名：${d.name}<br>
       規格：${d.spec}<br>
+      セクション：${d.section}<br>
       棚番：<span class="shelf">${d.shelf}</span>
       </div>
     `;
