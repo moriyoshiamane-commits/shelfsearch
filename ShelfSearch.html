@@ -77,7 +77,7 @@ body {
 let data = [];
 
 // CSV読み込み
-fetch("BUSDAU.CSV")
+fetch("BUSDAU.csv")
 .then(res => res.text())
 .then(text => {
   const lines = text.trim().split("\n");
